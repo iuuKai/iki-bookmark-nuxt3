@@ -7,9 +7,12 @@ import { useGlobalStore } from '@/store/modules/global'
 
 const dayjs = useDayjs()
 const curDay = dayjs().day()
-const imgModules = import.meta.glob('@/assets/img/bg_*')
+const imgModules = import.meta.glob('@/assets/img/bg_*', {
+	eager: true,
+	import: 'default'
+})
 const curImgKey = Object.keys(imgModules)[curDay]
-const curBgImg = await imgModules[curImgKey]().then((res: any) => `url(${res.default})`)
+const curBgImg = `url(${imgModules[curImgKey]})`
 const globalStore = useGlobalStore()
 const { width, height } = useWindowSize()
 watch([width, height], ([w, h]) => globalStore.setScreenSize(w, h), { immediate: true })

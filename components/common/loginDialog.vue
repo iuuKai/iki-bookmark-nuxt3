@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-27 00:24:23
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-05 21:28:53
+ * @LastEditTime: 2023-09-10 09:14:24
  * @FilePath: \iki-bookmark-nuxt3\components\common\loginDialog.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -70,17 +70,17 @@ const token = computed({
 // 	set: (val: string) => userStore.setType(val)
 // })
 
-const gitIconModules = import.meta.glob('../icon/Git*.vue')
-const iconBar = await Promise.all(
-	Object.keys(gitIconModules).map(async k => {
-		const type = useToLower(k.replace(/\.\.\/icon\/(.*)\.vue/gi, '$1'))
-		const component = await gitIconModules[k]().then((res: any) => res.default)
-		return {
-			type,
-			component
-		}
-	})
-)
+const gitIconModules = import.meta.glob('../icon/Git*.vue', {
+	eager: true,
+	import: 'default'
+})
+const iconBar = Object.keys(gitIconModules).map(k => {
+	const type = useToLower(k.replace(/\.\.\/icon\/(.*)\.vue/gi, '$1'))
+	return {
+		type,
+		component: gitIconModules[k]
+	}
+})
 
 const login = async (params: { type: string; token: string }) => {
 	try {

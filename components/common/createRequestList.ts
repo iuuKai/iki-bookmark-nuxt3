@@ -1,3 +1,12 @@
+/*
+ * @Author: iuukai
+ * @Date: 2023-09-06 13:32:20
+ * @LastEditors: iuukai
+ * @LastEditTime: 2023-09-10 09:07:05
+ * @FilePath: \iki-bookmark-nuxt3\components\common\createRequestList.ts
+ * @Description:
+ * @QQ/微信: 790331286
+ */
 import { useUserStore } from '@/store/modules/user'
 import { useRepoStore } from '@/store/modules/repo'
 
@@ -16,28 +25,27 @@ export interface Result {
 
 const userStore = useUserStore()
 const repoStore = useRepoStore()
-const templateModels = import.meta.glob('@/assets/init-create-template/*.ts')
+const templateModels = import.meta.glob('@/assets/init-create-template/*.ts', {
+	eager: true,
+	import: 'default'
+})
 const initRepoFile = repoStore.initRepoFile
 
-const repoFilesParams = await Promise.all(
-	initRepoFile.map(async path => {
-		const k = Object.keys(templateModels).find(
-			k =>
-				/\/([^\/]*)\.ts$/.exec(k)?.[1]?.replace('_', '/')?.toLocaleLowerCase() ===
-				path.toLocaleLowerCase()
-		)
+const repoFilesParams = initRepoFile.map(path => {
+	const k = Object.keys(templateModels).find(
+		k =>
+			/\/([^\/]*)\.ts$/.exec(k)?.[1]?.replace('_', '/')?.toLocaleLowerCase() ===
+			path.toLocaleLowerCase()
+	)
 
-		const content = await templateModels[k as string]().then((res: any) => Base64.enc(res.default))
-
-		return {
-			path,
-			content,
-			owner: userStore.loginName,
-			repo: 'my-bookmarks',
-			message: 'iBookmark: init private repo'
-		}
-	})
-)
+	return {
+		path,
+		content: templateModels[k as string],
+		owner: userStore.loginName,
+		repo: 'my-bookmarks',
+		message: 'iBookmark: init private repo'
+	}
+})
 
 export const getRequestList = (): RequestObject[] => [
 	{
