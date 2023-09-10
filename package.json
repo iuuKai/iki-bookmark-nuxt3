@@ -1,49 +1,57 @@
 {
-	"name": "iki-bookmark-nuxt3",
-	"private": true,
-	"scripts": {
-		"build": "nuxt build",
-		"dev": "nuxt dev",
-		"generate": "nuxt generate",
-		"preview": "nuxt preview",
-		"postinstall": "nuxt prepare",
-		"build:test": "nuxt build && node .output/server/index.mjs",
-		"test:view": "node .output/server/index.mjs"
-	},
-	"engines": {
-		"node": ">=16.15.0"
-	},
-	"devDependencies": {
-		"@nuxt/devtools": "latest",
-		"@nuxtjs/stylelint-module": "^5.1.0",
-		"@types/node": "^18.17.1",
-		"@types/tailwindcss": "^3.1.0",
-		"@vite-pwa/nuxt": "^0.1.0",
-		"autoprefixer": "latest",
-		"less": "^4.2.0",
-		"nuxt": "^3.6.5",
-		"postcss": "latest",
-		"postcss-html": "^1.5.0",
-		"postcss-less": "^6.0.0",
-		"stylelint": "^15.10.2",
-		"stylelint-config-html": "^1.1.0",
-		"stylelint-config-prettier": "^9.0.5",
-		"stylelint-config-recommended": "^13.0.0",
-		"stylelint-config-recommended-vue": "^1.5.0",
-		"stylelint-config-standard": "^34.0.0",
-		"unplugin-vue-components": "^0.25.1"
-	},
-	"dependencies": {
-		"@element-plus/nuxt": "^1.0.5",
-		"@nuxtjs/google-fonts": "^3.0.2",
-		"@nuxtjs/tailwindcss": "^6.8.0",
-		"@pinia/nuxt": "^0.4.11",
-		"@vueuse/nuxt": "^10.3.0",
-		"dayjs-nuxt": "^1.1.2",
-		"element-plus": "^2.3.9",
-		"nuxt-icon": "^0.5.0",
-		"nuxt-lazy-hydrate": "^1.0.0",
-		"nuxt-lodash": "^2.5.0",
-		"pinia": "^2.1.6"
-	}
+  "name": "iki-bookmark-nuxt3",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "build:view": "nuxt build && node .output/server/index.mjs"
+  },
+  "author": {
+    "name": "iuukai",
+    "email": "790331286@163.com",
+    "github": "https://github.com/iuukai",
+    "gitee": "https://gitee.com/iuukai"
+  },
+  "engines": {
+    "node": ">=16.15.0"
+  },
+  "devDependencies": {
+    "@nuxt/devtools": "latest",
+    "@nuxtjs/stylelint-module": "^5.1.0",
+    "@types/node": "^18.17.1",
+    "@types/tailwindcss": "^3.1.0",
+    "@vite-pwa/nuxt": "^0.1.0",
+    "autoprefixer": "latest",
+    "less": "^4.2.0",
+    "nuxt": "^3.6.5",
+    "postcss": "latest",
+    "postcss-html": "^1.5.0",
+    "postcss-less": "^6.0.0",
+    "stylelint": "^15.10.2",
+    "stylelint-config-html": "^1.1.0",
+    "stylelint-config-prettier": "^9.0.5",
+    "stylelint-config-recommended": "^13.0.0",
+    "stylelint-config-recommended-vue": "^1.5.0",
+    "stylelint-config-standard": "^34.0.0",
+    "unplugin-vue-components": "^0.25.1"
+  },
+  "dependencies": {
+    "@element-plus/nuxt": "^1.0.5",
+    "@nuxtjs/google-fonts": "^3.0.2",
+    "@nuxtjs/tailwindcss": "^6.8.0",
+    "@pinia/nuxt": "^0.4.11",
+    "@vueuse/nuxt": "^10.3.0",
+    "crypto-js": "^4.1.1",
+    "crypto-random-string": "^5.0.0",
+    "dayjs-nuxt": "^1.1.2",
+    "element-plus": "^2.3.9",
+    "nuxt-icon": "^0.5.0",
+    "nuxt-lazy-hydrate": "^1.0.0",
+    "nuxt-lodash": "^2.5.0",
+    "pinia": "^2.1.6"
+  }
 }

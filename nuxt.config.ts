@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-15 01:10:40
  * @LastEditors: iuukai
- * @LastEditTime: 2023-08-30 13:27:57
+ * @LastEditTime: 2023-09-03 08:48:08
  * @FilePath: \iki-bookmark-nuxt3\nuxt.config.ts
  * @Description:
  * @QQ/微信: 790331286
@@ -50,12 +50,18 @@ export default defineNuxtConfig({
 	// experimental: {
 	// 	externalVue: true	// 勿 false，否则打包出错
 	// },
+	runtimeConfig: {
+		public: {
+			baseURL: 'https://ibookmark.onrender.com/'
+		}
+	},
 	app: {
+		// ssr 页面开启过渡动画后，切换页面过快会导致 dom 未加载报错
 		// pageTransition: { name: 'page', mode: 'out-in' },
 		head: {
 			charset: 'utf-8',
 			viewport: 'width=device-width, initial-scale=1',
-			title: 'ibookmark',
+			title: 'iBookmark',
 			htmlAttrs: {
 				lang: 'zh-cn'
 			},

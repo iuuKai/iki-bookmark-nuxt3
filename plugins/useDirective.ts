@@ -1,28 +1,28 @@
 /*
  * @Author: iuukai
- * @Date: 2023-08-23 22:38:33
+ * @Date: 2023-09-03 08:41:53
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-01 19:51:57
+ * @LastEditTime: 2023-09-05 21:19:45
  * @FilePath: \iki-bookmark-nuxt3\plugins\useDirective.ts
  * @Description:
  * @QQ/微信: 790331286
  */
 import { LOGIN_NAME, HASREPO_NAME, STARORGIN_NAME } from '@/permissions'
 import { useUserStore } from '@/store/modules/user'
-import { useBookmarkStore } from '@/store/modules/bookmark'
+import { useRepoStore } from '@/store/modules/repo'
 
 // 全局指令
 export default defineNuxtPlugin(nuxtApp => {
 	const { directive } = nuxtApp.vueApp
 	const userStore = useUserStore()
-	const bookmarkStore = useBookmarkStore()
+	const repoStore = useRepoStore()
 
 	directive('permissions', {
 		mounted(el, binding) {
 			el.addEventListener('click', (e: Event) => {
 				if (!binding.value) return
 				const isLogin = userStore.isLogin
-				const isHasRepo = bookmarkStore.isHasRepo
+				const isHasRepo = repoStore.isHasRepo
 				if (
 					(binding.value.includes(LOGIN_NAME) && !isLogin) ||
 					(binding.value.includes(HASREPO_NAME) && !isHasRepo)
@@ -31,7 +31,7 @@ export default defineNuxtPlugin(nuxtApp => {
 					e.preventDefault()
 					if (binding.value.includes(LOGIN_NAME) && !isLogin) userStore.setLoginDialogShow(true)
 					if (binding.value.includes(HASREPO_NAME) && !isHasRepo)
-						bookmarkStore.setCreateRepoDialogShow(true)
+						repoStore.setCreateRepoDialogShow(true)
 				}
 			})
 		},

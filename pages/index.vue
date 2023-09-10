@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-06 12:24:38
  * @LastEditors: iuukai
- * @LastEditTime: 2023-08-28 07:10:22
+ * @LastEditTime: 2023-09-09 15:56:09
  * @FilePath: \iki-bookmark-nuxt3\pages\index.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -31,8 +31,7 @@
 </template>
 
 <script setup lang="ts">
-import defaultMarks from '@/db/index.json'
-
+import defaultMarks from '@/assets/db/index.json'
 const marks = computed(() => defaultMarks)
 </script>
 

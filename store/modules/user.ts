@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-26 09:32:42
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-01 23:57:38
+ * @LastEditTime: 2023-09-07 02:48:48
  * @FilePath: \iki-bookmark-nuxt3\store\modules\user.ts
  * @Description:
  * @QQ/微信: 790331286
@@ -17,7 +17,6 @@ interface UserState {
 	oauthType: string | undefined
 	userInfo: any
 }
-
 const TYPE_KEY = '_bm_type'
 const OAUTH_TYPE_KEY = '_bm_oauthType'
 const ACCESS_TOKEN_KEY = '_bm_token'
@@ -50,6 +49,9 @@ export const useUserStore = defineStore({
 		},
 		isLogin(): boolean {
 			return Boolean(this.token && this.userInfo?.login)
+		},
+		loginName(): string {
+			return this.userInfo?.login ?? ''
 		}
 	},
 	actions: {

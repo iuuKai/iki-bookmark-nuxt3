@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-26 09:31:17
  * @LastEditors: iuukai
- * @LastEditTime: 2023-08-31 17:47:08
+ * @LastEditTime: 2023-09-10 00:27:31
  * @FilePath: \iki-bookmark-nuxt3\store\modules\global.ts
  * @Description:
  * @QQ/微信: 790331286
@@ -13,7 +13,6 @@ interface GlobalState {
 	screenWidth: number
 	screenHeight: number
 }
-
 export const useGlobalStore = defineStore({
 	id: 'global',
 	state: (): GlobalState => ({

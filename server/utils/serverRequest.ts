@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-31 00:46:49
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-02 00:29:36
+ * @LastEditTime: 2023-09-04 09:11:19
  * @FilePath: \iki-bookmark-nuxt3\server\utils\serverRequest.ts
  * @Description:
  * @QQ/微信: 790331286
@@ -11,13 +11,14 @@
 export const serverRequest = (method: string, url: string, data: any, token?: string) => {
 	const tu = new URL(url)
 	const targetURL = tu.origin + tu.pathname
+	const isGET = method.toLowerCase() === 'get'
 
 	return $fetch(url, {
 		method,
 		headers: { Accept: 'application/json' },
-		params: method.toLowerCase() === 'get' ? { ...data } : undefined,
+		params: isGET ? { ...data } : undefined,
 		// body: method.toLowerCase() === 'post' ? new URLSearchParams(data).toString() : undefined,
-		body: method.toLowerCase() === 'post' ? data : undefined,
+		body: !isGET ? data : undefined,
 		onRequest({ request, options }: any) {
 			const { headers }: any = options
 			if (token) headers['Authorization'] = token
@@ -36,12 +37,18 @@ export const serverRequest = (method: string, url: string, data: any, token?: st
 			}
 		})
 		.catch((err: any) => {
-			return {
-				code: err.status ?? err.statusCode ?? 502,
-				msg:
-					err.statusText ?? err.statusMessage ?? err.error_description ?? err.error ?? err.message,
-				targetURL,
-				data: null
-			}
+			console.log('serverRequest❌:', err)
+			// return {
+			// 	code: err.status ?? err.statusCode ?? 502,
+			// 	msg:
+			// 		err.statusText ?? err.statusMessage ?? err.error_description ?? err.error ?? err.message,
+			// 	targetURL,
+			// 	data: null
+			// }
+			throw createError({
+				statusCode: err.status ?? err.statusCode ?? 502,
+				statusMessage:
+					err.statusText ?? err.statusMessage ?? err.error_description ?? err.error ?? err.message
+			})
 		})
 }

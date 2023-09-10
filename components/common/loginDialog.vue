@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-27 00:24:23
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-02 02:06:51
+ * @LastEditTime: 2023-09-05 21:28:53
  * @FilePath: \iki-bookmark-nuxt3\components\common\loginDialog.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -85,14 +85,8 @@ const iconBar = await Promise.all(
 const login = async (params: { type: string; token: string }) => {
 	try {
 		const { code, msg, data }: any = await useApiGetUserInfo(params)
-		console.log(code, msg)
 		if (code !== 200) throw new Error(msg)
 		userStore.setUserInfo(data)
-		// const res: any = await useApiGetUserBookmarkRepo({
-		// 	owner: userInfo.login,
-		// 	repo: 'my-bookmarks'
-		// })
-		// console.log(res)
 	} catch (error) {
 		return Promise.reject(error)
 	}

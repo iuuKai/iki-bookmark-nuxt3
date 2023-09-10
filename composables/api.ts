@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-31 22:39:55
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-01 20:57:05
+ * @LastEditTime: 2023-09-07 21:26:41
  * @FilePath: \iki-bookmark-nuxt3\composables\api.ts
  * @Description:
  * @QQ/微信: 790331286
@@ -42,4 +42,16 @@ export const useApiGetBookmarkRepo = (params?: any) => {
 export const useApiCreateBookmarkRepo = (params?: any) => {
 	const url = '/api/createRepo'
 	return clientRequest({ url, method: 'post', params })
+}
+
+// 新建文件
+export const useApiCreateBookmarkFile = (params?: any) => {
+	const url = '/api/createFile'
+	return clientRequest({ url, method: 'post', params })
+}
+
+// 获取仓库路径内容
+export const useApiGetBookmarkContents = (params?: any) => {
+	const url = '/api/getRepoContents'
+	return clientRequest({ url, params })
 }

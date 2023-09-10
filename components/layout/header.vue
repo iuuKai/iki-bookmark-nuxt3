@@ -2,13 +2,13 @@
  * @Author: iuukai
  * @Date: 2023-08-14 01:45:15
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-02 02:27:31
+ * @LastEditTime: 2023-09-10 00:10:18
  * @FilePath: \iki-bookmark-nuxt3\components\layout\header.vue
  * @Description: 
  * @QQ/微信: 790331286
 -->
 <template>
-	<div>
+	<div class="p-6 pl-0">
 		<div class="bm-header-wrapper" align="middle">
 			<div class="flex-1 flex">
 				<!-- <div class="mr-2 cursor-pointer">
@@ -20,7 +20,7 @@
 							<Icon name="ph:magnifying-glass"></Icon>
 						</template>
 					</el-input> -->
-					<div class="bm-search_button">
+					<div class="bm-search_button" v-permissions="[LOGIN_NAME, HASREPO_NAME]">
 						<el-space>
 							<Icon name="ph:magnifying-glass" size="1.2rem"></Icon>
 							<span>Search</span>
@@ -51,19 +51,21 @@
 				</el-space>
 			</div>
 		</div>
-		<ClientOnly>
-			<transition name="el-zoom-in-left" mode="out-in" appear>
-				<div class="mb-6 text-xl font-bold" :key="route.path">{{ menuTitle }}</div>
-			</transition>
-			<template #fallback>
-				<div class="mb-6 text-xl font-bold">Loading Title...</div>
-			</template>
-		</ClientOnly>
+		<div class="text-xl font-bold">
+			<ClientOnly>
+				<transition name="el-zoom-in-left" mode="out-in" appear>
+					<span :key="route.path">{{ menuTitle }}</span>
+				</transition>
+				<template #fallback>
+					<span>Loading Title...</span>
+				</template>
+			</ClientOnly>
+		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { LOGIN_NAME } from '@/permissions'
+import { LOGIN_NAME, HASREPO_NAME } from '@/permissions'
 import { useUserStore } from '@/store/modules/user'
 defineProps({
 	menuTitle: {

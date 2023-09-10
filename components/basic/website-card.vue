@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-23 04:19:30
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-02 12:08:23
+ * @LastEditTime: 2023-09-10 08:34:06
  * @FilePath: \iki-bookmark-nuxt3\components\basic\website-card.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -13,7 +13,7 @@
 			<div class="bm-website_header" :title="title">
 				<BasicImage class="w-10 h-10" :src="icon" fit="contain" lazy />
 				<el-text class="bm-website_title" truncated tag="div">{{ title }}</el-text>
-				<el-text
+				<!-- <el-text
 					class="bm-website_bar"
 					tag="div"
 					v-permissions="[LOGIN_NAME, HASREPO_NAME]"
@@ -27,7 +27,19 @@
 						<Icon name="ic:round-star-outline" />
 						收藏
 					</template>
-				</el-text>
+				</el-text> -->
+				<el-dropdown trigger="click">
+					<span class="el-dropdown-link" @click.stop.prevent>Dropdown List</span>
+					<template #dropdown>
+						<el-dropdown-menu>
+							<el-dropdown-item>Action 1</el-dropdown-item>
+							<el-dropdown-item>Action 2</el-dropdown-item>
+							<el-dropdown-item>Action 3</el-dropdown-item>
+							<el-dropdown-item>Action 4</el-dropdown-item>
+							<el-dropdown-item>Action 5</el-dropdown-item>
+						</el-dropdown-menu>
+					</template>
+				</el-dropdown>
 			</div>
 			<div class="bm-website_content">
 				<el-tooltip

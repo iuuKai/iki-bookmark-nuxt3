@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-08 13:03:26
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-01 20:07:32
+ * @LastEditTime: 2023-09-09 23:56:41
  * @FilePath: \iki-bookmark-nuxt3\layouts\default.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -10,9 +10,9 @@
 <template>
 	<el-container class="bm-layout">
 		<CommonBgFull />
-		<el-main class="bm-layout-content" ref="mainRef">
+		<el-main class="bm-layout-content">
 			<CommonContainer flex fullHeight overHide customClass="p-10">
-				<div class="bm-content-wrapper" ref="wrapRef">
+				<div class="bm-content-wrapper">
 					<el-aside width="220px">
 						<LayoutAside @menu-click="curMenuTitle = $event" />
 					</el-aside>
@@ -26,7 +26,7 @@
 				</div>
 			</CommonContainer>
 		</el-main>
-		<el-footer class="bm-layout-footer" ref="footerRef">
+		<el-footer class="bm-layout-footer">
 			<CommonContainer flex justify="center" align="middle" fullHeight>
 				<LayoutFooter />
 			</CommonContainer>
@@ -48,10 +48,10 @@ const curMenuTitle = ref('')
 
 	.bm-layout-content {
 		.bm-content-wrapper {
-			@apply p-5 flex flex-1 h-full rounded-3xl backdrop-blur-md bg-white/60;
+			@apply flex flex-1 h-full rounded-3xl backdrop-blur-md bg-white/60;
 
 			.bm-scroll-wrapper {
-				@apply px-5 h-full overflow-y-auto;
+				@apply mr-3 pr-3 pl-6 mb-6 h-full overflow-y-auto;
 			}
 		}
 	}
