@@ -47,7 +47,7 @@ const repoFilesParams = initRepoFile.map(path => {
 	}
 })
 
-export const getRequestList = (): RequestObject[] => [
+export const getResponseList = (): RequestObject[] => [
 	{
 		name: '仓库',
 		required: true,
