@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-23 04:19:30
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-13 00:11:18
+ * @LastEditTime: 2023-09-13 01:20:19
  * @FilePath: \iki-bookmark-nuxt3\components\basic\website-card.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -13,23 +13,23 @@
 			<div class="bm-website_header" :title="title">
 				<BasicImage class="w-10 h-10" :src="icon" fit="contain" lazy />
 				<el-text class="bm-website_title" truncated tag="div">{{ title }}</el-text>
-				<el-text
+				<div
 					:class="['bm-website_bar', { 'is-star': isStar }]"
-					tag="div"
-					v-permissions="[LOGIN_NAME, HASREPO_NAME]"
 					@click.stop.prevent="handleClickStar"
 				>
-					<ClientOnly>
-						<template v-if="isStar">
-							<Icon name="ic:round-star" size="1rem" />
-							已收藏
-						</template>
-						<template v-else>
-							<Icon name="ic:round-star-outline" size="1rem" />
-							收藏
-						</template>
-					</ClientOnly>
-				</el-text>
+					<el-text tag="div" v-permissions="[LOGIN_NAME, HASREPO_NAME]">
+						<ClientOnly>
+							<template v-if="isStar">
+								<Icon name="ic:round-star" size="1rem" />
+								已收藏
+							</template>
+							<template v-else>
+								<Icon name="ic:round-star-outline" size="1rem" />
+								收藏
+							</template>
+						</ClientOnly>
+					</el-text>
+				</div>
 				<!-- <el-dropdown
 					:class="['bm-website_bar', { 'is-active': dropdownVisible }]"
 					trigger="click"

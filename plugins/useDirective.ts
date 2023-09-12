@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-09-03 08:41:53
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-05 21:19:45
+ * @LastEditTime: 2023-09-13 01:20:50
  * @FilePath: \iki-bookmark-nuxt3\plugins\useDirective.ts
  * @Description:
  * @QQ/微信: 790331286
