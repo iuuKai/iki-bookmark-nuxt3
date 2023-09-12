@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-15 01:10:40
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-03 08:48:08
+ * @LastEditTime: 2023-09-12 17:40:21
  * @FilePath: \iki-bookmark-nuxt3\nuxt.config.ts
  * @Description:
  * @QQ/微信: 790331286
@@ -100,7 +100,7 @@ export default defineNuxtConfig({
 		namespace: 'el',
 		injectionID: { prefix: 1024, current: 0 }
 	},
-	plugins: ['@/plugins/useDirective', '@/plugins/useStateInitialize'],
+	plugins: ['@/plugins/useDirective', '@/plugins/useLaunchInit'],
 	vite: {
 		logLevel: 'silent',
 		build: {

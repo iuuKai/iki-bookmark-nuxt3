@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-19 13:47:59
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-09 23:44:41
+ * @LastEditTime: 2023-09-10 23:47:05
  * @FilePath: \iki-bookmark-nuxt3\components\layout\aside.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -13,28 +13,6 @@
 			<img src="~/assets/logo.png" alt="" />
 		</div>
 		<div class="bm-aside_nav">
-			<div v-for="menu in menus" :key="menu.path" @click="handle(menu.path)">
-				<div
-					class="h-9 flex justify-start items-center cursor-pointer"
-					v-permissions="menu.permissions"
-				>
-					<el-space>
-						<Icon :name="menu.icon" size="20px" />
-						<span>{{ menu.name }}</span>
-					</el-space>
-				</div>
-			</div>
-			<div v-for="menu in menus" :key="menu.path" @click="handle(menu.path)">
-				<div
-					class="h-9 flex justify-start items-center cursor-pointer"
-					v-permissions="menu.permissions"
-				>
-					<el-space>
-						<Icon :name="menu.icon" size="20px" />
-						<span>{{ menu.name }}</span>
-					</el-space>
-				</div>
-			</div>
 			<div v-for="menu in menus" :key="menu.path" @click="handle(menu.path)">
 				<div
 					class="h-9 flex justify-start items-center cursor-pointer"

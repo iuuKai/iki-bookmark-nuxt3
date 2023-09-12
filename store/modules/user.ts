@@ -25,12 +25,12 @@ const USER_IFNO_KEY = '_bm_userInfo'
 const type = useStorage(TYPE_KEY, '')
 const oauthType = useStorage(OAUTH_TYPE_KEY, '')
 const token = useStorage(ACCESS_TOKEN_KEY, '')
-const userInfo = useStorage(USER_IFNO_KEY, {}, undefined, {
-	serializer: {
-		read: v => (v ? JSON.parse(v) : null),
-		write: v => JSON.stringify(v)
-	}
-})
+// const userInfo = useStorage(USER_IFNO_KEY, {}, undefined, {
+// 	serializer: {
+// 		read: v => (v ? JSON.parse(v) : null),
+// 		write: v => JSON.stringify(v)
+// 	}
+// })
 
 export const useUserStore = defineStore({
 	id: 'user',
@@ -55,6 +55,12 @@ export const useUserStore = defineStore({
 		}
 	},
 	actions: {
+		initStorageState() {
+			this.token = token.value
+			this.type = type.value || 'github'
+			this.oauthType = oauthType.value
+			// this.userInfo = userInfo.value
+		},
 		setLoginDialogShow(_show: boolean) {
 			this.isLoginDialogShow = _show
 		},
@@ -72,13 +78,19 @@ export const useUserStore = defineStore({
 		},
 		setUserInfo(_userInfo: object) {
 			this.userInfo = _userInfo
-			userInfo.value = _userInfo
+			// 有数据则清空 oauth_type
+			this.setOauthType(undefined)
+			// userInfo.value = _userInfo
 		},
-		initStorageState() {
-			this.token = token.value
-			this.type = type.value || 'github'
-			this.oauthType = oauthType.value
-			this.userInfo = userInfo.value
+		async apiGetUserInfo() {
+			try {
+				const params = { type: this.type, token: this.token }
+				const { code, msg, data }: any = await useApiGetUserInfo(params)
+				if (code !== 200) throw new Error(msg)
+				this.setUserInfo(data)
+			} catch (error) {
+				return Promise.reject(error)
+			}
 		}
 	}
 })

@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-22 23:27:28
  * @LastEditors: iuukai
- * @LastEditTime: 2023-08-23 04:58:35
+ * @LastEditTime: 2023-09-12 23:40:50
  * @FilePath: \iki-bookmark-nuxt3\components\basic\image.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -65,7 +65,7 @@ const { isPending, isFailed, url } = toRefs(state)
 let img: HTMLImageElement | null
 
 const loadImage = () => {
-	if (!state.isPending || state.url) return
+	if (!state.isPending || state.url || process.server) return
 	img = new Image()
 	img.src = props.src
 	img.addEventListener('load', handleImageResult, false)

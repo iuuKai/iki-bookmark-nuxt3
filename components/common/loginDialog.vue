@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-27 00:24:23
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-10 09:14:24
+ * @LastEditTime: 2023-09-12 17:05:26
  * @FilePath: \iki-bookmark-nuxt3\components\common\loginDialog.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -116,7 +116,7 @@ const handleIconClick = async (type: string) => {
 		new URL(data.url)
 		// 记录授权平台
 		userStore.setOauthType(type)
-		window.open(data.url, '_blank', 'width=500,height=500')
+		window.open(data.url, '_blank', 'width=500,height=500') as Window
 	} catch (error) {
 		ElMessage.error('前往授权页面失败...')
 	}

@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-30 17:20:34
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-07 05:38:08
+ * @LastEditTime: 2023-09-12 17:58:14
  * @FilePath: \iki-bookmark-nuxt3\composables\clientRequest.ts
  * @Description:
  * @QQ/微信: 790331286
@@ -26,6 +26,7 @@ export const clientRequest = (options: RequestOptions) => {
 
 	return new Promise((resolve, reject) => {
 		useFetch(url, {
+			key: String(Math.random()),
 			method,
 			headers: { ...headers },
 			params: useToLower(method) === 'get' ? { ...params } : undefined,

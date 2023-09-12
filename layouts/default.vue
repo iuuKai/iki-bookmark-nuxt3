@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-08 13:03:26
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-09 23:56:41
+ * @LastEditTime: 2023-09-11 23:54:29
  * @FilePath: \iki-bookmark-nuxt3\layouts\default.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -48,7 +48,7 @@ const curMenuTitle = ref('')
 
 	.bm-layout-content {
 		.bm-content-wrapper {
-			@apply flex flex-1 h-full rounded-3xl backdrop-blur-md bg-white/60;
+			@apply flex flex-1 h-full rounded-3xl backdrop-blur-md bg-white/60 overflow-hidden;
 
 			.bm-scroll-wrapper {
 				@apply mr-3 pr-3 pl-6 mb-6 h-full overflow-y-auto;
