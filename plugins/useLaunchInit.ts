@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-29 18:26:56
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-12 18:07:14
+ * @LastEditTime: 2023-09-13 00:33:21
  * @FilePath: \iki-bookmark-nuxt3\plugins\useLaunchInit.ts
  * @Description:
  * @QQ/微信: 790331286

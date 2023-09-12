@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-06 12:24:38
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-12 23:55:53
+ * @LastEditTime: 2023-09-13 00:54:20
  * @FilePath: \iki-bookmark-nuxt3\pages\index.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -57,6 +57,8 @@ const flatWebsiteData = computed<FlatWebsite[]>(() => {
 		return res
 	}, [])
 })
+const isLogin = computed(() => repoStore.owner)
+const isHasRepo = computed(() => repoStore.isHasRepo)
 
 const isStar = computed(
 	() =>
@@ -64,7 +66,10 @@ const isStar = computed(
 			flatWebsiteData.value.findIndex(website => website.id === id) > -1
 )
 
-initData()
+watch([isLogin, isHasRepo], ([l, r]) => {
+	if (l && r) initData()
+})
+
 function initData() {
 	repoStore.apiGetWebsiteData()
 }
