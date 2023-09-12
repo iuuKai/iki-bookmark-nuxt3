@@ -22,7 +22,8 @@ export default defineNuxtPlugin(async nuxtApp => {
 		const token = userStore.token
 		const type = userStore.type
 		const userInfo = userStore.userInfo
-		if (token && type && isEmpty(userInfo)) {
+		if (!token) return
+		if (type && isEmpty(userInfo)) {
 			// 获取用户信息
 			await userStore.apiGetUserInfo().catch(err => new Error(`登录失败: ${err?.message ?? err}`))
 		}
