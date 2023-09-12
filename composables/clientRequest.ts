@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-30 17:20:34
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-12 17:58:14
+ * @LastEditTime: 2023-09-13 01:56:42
  * @FilePath: \iki-bookmark-nuxt3\composables\clientRequest.ts
  * @Description:
  * @QQ/微信: 790331286
@@ -22,6 +22,7 @@ export const clientRequest = (options: RequestOptions) => {
 	const { url = '', method = 'get', headers = {}, params = {} } = options
 	const token = userStore.token || params.token
 	const type = userStore.oauthType || userStore.type
+	console.log({ url, token, type })
 	if (type && !params.type) params['type'] = type
 
 	return new Promise((resolve, reject) => {

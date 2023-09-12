@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-27 00:24:23
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-12 17:05:26
+ * @LastEditTime: 2023-09-13 02:09:17
  * @FilePath: \iki-bookmark-nuxt3\components\common\loginDialog.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -123,7 +123,6 @@ const handleIconClick = async (type: string) => {
 }
 
 const clearCache = () => {
-	userStore.setType(userStore.oauthType as string)
 	// 清空授权平台
 	userStore.setOauthType(undefined)
 	oauth.value = null

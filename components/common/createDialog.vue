@@ -2,14 +2,14 @@
  * @Author: iuukai
  * @Date: 2023-09-01 19:52:20
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-10 10:56:10
+ * @LastEditTime: 2023-09-13 01:34:42
  * @FilePath: \iki-bookmark-nuxt3\components\common\createDialog.vue
  * @Description: 
  * @QQ/微信: 790331286
 -->
 <template>
 	<el-dialog
-		v-if="isLogin"
+		v-if="isLogin && !isHasRepo"
 		v-model="dialogVisible"
 		title="创建仓库"
 		width="400px"
@@ -95,6 +95,7 @@ const isNext = ref<boolean>(false)
 const isCreating = ref<boolean>(false)
 const isDone = ref<boolean>(false)
 const isLogin = computed<boolean>(() => userStore.isLogin)
+const isHasRepo = computed<boolean>(() => repoStore.isHasRepo)
 const dialogVisible = computed<boolean>({
 	get: () => repoStore.isCreateRepoDialogShow,
 	set: (val: boolean) => repoStore.setCreateRepoDialogShow(val)
@@ -102,6 +103,17 @@ const dialogVisible = computed<boolean>({
 const resultList = ref<Result[]>([])
 const resultListCount = computed<number>(() => resultList.value.length)
 const scrollbarRef = ref()
+
+watch(isLogin, v => {
+	if (!v) return
+	const promiseList = [
+		// 获取仓库信息
+		repoStore.apiGetRepoInfo(),
+		// 获取配置信息
+		repoStore.apiGetConfigData()
+	]
+	Promise.all(promiseList)
+})
 
 watch(dialogVisible, v => {
 	// !v && (isCreating.value = false)

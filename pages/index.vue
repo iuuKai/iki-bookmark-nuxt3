@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-06 12:24:38
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-13 00:54:20
+ * @LastEditTime: 2023-09-13 01:46:23
  * @FilePath: \iki-bookmark-nuxt3\pages\index.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -47,6 +47,8 @@ interface FlatWebsite {
 }
 
 const repoStore = useRepoStore()
+const isLogin = computed(() => repoStore.owner)
+const isHasRepo = computed(() => repoStore.isHasRepo)
 const isLoading = ref(false)
 const flatWebsiteData = computed<FlatWebsite[]>(() => {
 	return repoStore.websiteData.reduce((res, cur) => {
@@ -57,8 +59,6 @@ const flatWebsiteData = computed<FlatWebsite[]>(() => {
 		return res
 	}, [])
 })
-const isLogin = computed(() => repoStore.owner)
-const isHasRepo = computed(() => repoStore.isHasRepo)
 
 const isStar = computed(
 	() =>
@@ -66,11 +66,16 @@ const isStar = computed(
 			flatWebsiteData.value.findIndex(website => website.id === id) > -1
 )
 
-watch([isLogin, isHasRepo], ([l, r]) => {
-	if (l && r) initData()
-})
+watch(
+	[isLogin, isHasRepo],
+	([l, r]) => {
+		if (l && r) initData()
+	},
+	{ immediate: true }
+)
 
 function initData() {
+	console.log(111112)
 	repoStore.apiGetWebsiteData()
 }
 
