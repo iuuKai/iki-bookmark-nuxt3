@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-15 01:10:40
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-12 17:40:21
+ * @LastEditTime: 2023-09-17 23:08:45
  * @FilePath: \iki-bookmark-nuxt3\nuxt.config.ts
  * @Description:
  * @QQ/微信: 790331286
@@ -54,6 +54,10 @@ export default defineNuxtConfig({
 		public: {
 			baseURL: 'https://ibookmark.onrender.com/'
 		}
+	},
+	alias: {},
+	build: {
+		transpile: [/echarts/]
 	},
 	app: {
 		// ssr 页面开启过渡动画后，切换页面过快会导致 dom 未加载报错

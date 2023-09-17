@@ -12,7 +12,7 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({ middleware: ['auth'] })
+definePageMeta({ middleware: ['a-need-login', 'b-need-repo'] })
 </script>
 
 <style scoped lang="less"></style>

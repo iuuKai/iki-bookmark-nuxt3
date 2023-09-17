@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-16 08:01:20
  * @LastEditors: iuukai
- * @LastEditTime: 2023-08-23 22:10:57
+ * @LastEditTime: 2023-09-16 02:38:57
  * @FilePath: \iki-bookmark-nuxt3\components\common\container.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -35,6 +35,12 @@
 </template>
 
 <script setup lang="ts">
+interface AlignMap {
+	top: string
+	middle: string
+	bottom: string
+}
+
 type Align = 'top' | 'middle' | 'bottom'
 type Justify = 'start' | 'end' | 'center' | 'around' | 'between'
 
@@ -66,8 +72,8 @@ const props = defineProps({
 })
 
 const flexClass = computed(() => {
-	const { flex, align, justify } = props
-	const alignMap = {
+	const { flex, align, justify }: { flex: boolean; align: Align; justify: Justify } = props
+	const alignMap: AlignMap = {
 		top: 'start',
 		middle: 'center',
 		bottom: 'end'

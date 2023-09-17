@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-09-06 13:32:20
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-10 09:07:05
+ * @LastEditTime: 2023-09-16 14:36:55
  * @FilePath: \iki-bookmark-nuxt3\components\common\createRequestList.ts
  * @Description:
  * @QQ/微信: 790331286
@@ -11,7 +11,8 @@ import { useUserStore } from '@/store/modules/user'
 import { useRepoStore } from '@/store/modules/repo'
 
 export interface RequestObject {
-	name: string
+	value: string
+	label: string
 	required?: boolean
 	request: typeof useApiCreateBookmarkRepo | typeof useApiCreateBookmarkFile
 	params: object
@@ -19,8 +20,10 @@ export interface RequestObject {
 }
 
 export interface Result {
-	name: string
+	value: string
+	label: string
 	state: number
+	required?: boolean
 }
 
 const userStore = useUserStore()
@@ -40,7 +43,8 @@ const repoFilesParams = initRepoFile.map(path => {
 
 	return {
 		path,
-		content: templateModels[k as string],
+		content: Base64.enc(templateModels[k as string]),
+		// content: templateModels[k as string],	// 无 base64 会创建失败
 		owner: userStore.loginName,
 		repo: 'my-bookmarks',
 		message: 'iBookmark: init private repo'
@@ -49,7 +53,8 @@ const repoFilesParams = initRepoFile.map(path => {
 
 export const getResponseList = (): RequestObject[] => [
 	{
-		name: '仓库',
+		value: 'repo',
+		label: '仓库',
 		required: true,
 		request: useApiCreateBookmarkRepo,
 		params: {
@@ -60,7 +65,8 @@ export const getResponseList = (): RequestObject[] => [
 		result: []
 	},
 	...repoFilesParams.map(item => ({
-		name: item.path,
+		value: item.path,
+		label: item.path,
 		request: useApiCreateBookmarkFile,
 		params: item,
 		result: []
@@ -71,23 +77,31 @@ export const getResponseList = (): RequestObject[] => [
 export const requestQueue = async (
 	callback: (isDone: boolean) => void,
 	requests: RequestObject[],
-	results: Ref<Result[]>
+	results: Result[]
 ) => {
-	if (!requests || !results || !results.value) return callback(false)
+	if (!requests || !results || !results) return callback(false)
 	if (isEmpty(requests)) {
 		return callback(true)
 	}
 	const curRequest = requests.shift() as RequestObject
-	results.value.push({
-		name: curRequest.name,
+	results.push({
+		required: curRequest.required ?? false,
+		value: curRequest.value,
+		label: curRequest.label,
 		state: 0
 	})
-	const curResult = results.value.find(({ name }) => name === curRequest.name) as Result
+	const curResult = results.find(
+		({ label }: { label: string }) => label === curRequest.label
+	) as Result
 	try {
-		const { code, statusCode, statusMessage, message }: any = await curRequest.request(
+		const { code, statusCode, statusMessage, message, data }: any = await curRequest.request(
 			curRequest.params
 		)
 		if (code !== 200) throw new Error(message || statusMessage || statusCode)
+		// 创建配置文件后，获取
+		if (/^config/.test(curRequest.label)) {
+			await repoStore.apiGetConfigData()
+		}
 		curResult.state = 1
 	} catch (error) {
 		curResult.state = -1

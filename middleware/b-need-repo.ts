@@ -2,18 +2,18 @@
  * @Author: iuukai
  * @Date: 2023-09-05 03:37:35
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-12 20:44:42
+ * @LastEditTime: 2023-09-16 01:59:07
  * @FilePath: \iki-bookmark-nuxt3\middleware\auth.ts
  * @Description:
  * @QQ/微信: 790331286
  */
-import { useUserStore } from '@/store/modules/user'
+import { useRepoStore } from '@/store/modules/repo'
 
 export default defineNuxtRouteMiddleware((to, from) => {
 	if (process.server) return
-	const userStore = useUserStore()
-	const isLogin = userStore.isLogin
-	if (!isLogin && to.path !== '/') {
+	const repoStore = useRepoStore()
+	const isHasRepo = repoStore.isHasRepo
+	if (!isHasRepo) {
 		return navigateTo('/')
 	}
 })

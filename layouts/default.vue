@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-08 13:03:26
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-11 23:54:29
+ * @LastEditTime: 2023-09-16 03:09:15
  * @FilePath: \iki-bookmark-nuxt3\layouts\default.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -32,10 +32,12 @@
 			</CommonContainer>
 		</el-footer>
 	</el-container>
-	<ClientOnly>
-		<CommonLoginDialog />
-		<CommonCreateDialog />
-	</ClientOnly>
+	<div>
+		<ClientOnly>
+			<CommonLoginDialog />
+			<CommonCreateDialog />
+		</ClientOnly>
+	</div>
 </template>
 
 <script setup lang="ts">

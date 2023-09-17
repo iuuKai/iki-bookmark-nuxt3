@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-31 22:39:55
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-11 23:12:04
+ * @LastEditTime: 2023-09-13 23:32:06
  * @FilePath: \iki-bookmark-nuxt3\composables\api.ts
  * @Description:
  * @QQ/微信: 790331286
@@ -26,6 +26,9 @@ export const useApiGetWebContent = (website: string) => {
 			body: JSON.stringify({ url: website }),
 			onResponse({ request, response, options }) {
 				resolve(response._data)
+			},
+			onRequestError({ request, error }) {
+				reject({ code: 502, message: error.message })
 			}
 		})
 	})

@@ -11,4 +11,8 @@ export const LOGIN_NAME = 'permissionl:login'
 
 export const HASREPO_NAME = 'permissionl:hasRepo'
 
+export const HASCONFIG_NAME = 'permissionl:hasConfig'
+
+export const HASWEBSITE_NAME = 'permissionl:hasWebsite'
+
 export const STARORGIN_NAME = 'permissionl:starOrginRepo'

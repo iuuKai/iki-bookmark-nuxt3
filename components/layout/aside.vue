@@ -43,7 +43,7 @@ const handle = (path: string) => {
 
 watch(
 	() => route.path,
-	v => {
+	(v: string) => {
 		const curMenu = menus.find(item => item.path === v)
 		emits('menu-click', curMenu?.name ?? '')
 	},

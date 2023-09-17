@@ -39,6 +39,7 @@ const README = `# iBookmark 私人书签仓库
 - \`website\/\`: 私人网站收藏
 - \`note\/\`: 私人笔记收藏
 - \`image\/\`: 私人图片收藏
+- \`**\/data.json\`: 数据存储
 
 **Author**: **${authorStore.AUTHOR.name}**
 

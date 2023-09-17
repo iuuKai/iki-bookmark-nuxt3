@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-09-01 23:33:27
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-12 19:33:49
+ * @LastEditTime: 2023-09-16 19:20:53
  * @FilePath: \iki-bookmark-nuxt3\store\modules\repo.ts
  * @Description:
  * @QQ/微信: 790331286
@@ -13,39 +13,25 @@ import { useUserStore } from './user'
 interface RepoState {
 	isCreateRepoDialogShow: boolean
 	repoInfo: any
-	repoConfig: any
 	repoShas: any
 	initRepoFile: string[]
-	websiteData: any[]
+	notFoundPath: string[]
+	dataJSON: any
+	flatDataJSON: any
 }
 
 interface RepoFileData {
 	path: string
-	stateName: DataToStateName
 	data?: any
 }
 
-type DataToStateName = 'repoConfig' | 'websiteData'
-
 const initRepoFile = () => [
-	// 'image/category.json',
-	'image/data.json',
-	// 'image/tag.json',
-	'image/README.md',
-	// 'note/category.json',
-	'note/data.json',
-	// 'note/tag.json',
-	'note/README.md',
-	// 'plan/category.json',
-	'plan/data.json',
-	// 'plan/tag.json',
-	'plan/README.md',
-	// 'website/category.json',
-	'website/data.json',
-	// 'website/tag.json',
-	'website/README.md',
+	'README.md',
 	'config.ibookmark.json',
-	'README.md'
+	'website/data.json',
+	'image/data.json',
+	'note/data.json',
+	'plan/data.json'
 ]
 
 export const useRepoStore = defineStore({
@@ -56,8 +42,9 @@ export const useRepoStore = defineStore({
 		isCreateRepoDialogShow: false,
 		repoInfo: {},
 		repoShas: {},
-		repoConfig: {},
-		websiteData: []
+		notFoundPath: [],
+		dataJSON: {},
+		flatDataJSON: {}
 	}),
 	getters: {
 		isHasRepo(): boolean {
@@ -69,7 +56,7 @@ export const useRepoStore = defineStore({
 		repo(): string {
 			return 'my-bookmarks'
 		},
-		dayjs() {
+		dayjs(): any {
 			return useDayjs()
 		}
 	},
@@ -84,59 +71,81 @@ export const useRepoStore = defineStore({
 		setRepoInfo(_info: any) {
 			this.repoInfo = _info
 		},
-		setRepoConfig(_config: any) {
-			this.repoConfig = _config
+		setPathDataToState(_path: string, _data: any[]) {
+			this.dataJSON[_path] = _data
+			this.setFlatPathDataToState(_path, _data)
 		},
-		setWebsiteData(_data: any[]) {
-			this.websiteData = _data
+		setFlatPathDataToState(_path: string, _data?: any[]) {
+			const data = _data ?? this.dataJSON[_path]
+			if (!isArray(data)) return
+			this.flatDataJSON[_path] = data.reduce((res: any[], cur: any) => {
+				const { id: pid, category, list } = cur
+				list.forEach(({ id, title }: any, index: number) => {
+					res.push({ pid, category, id, title, index })
+				})
+				return res
+			}, [])
+			return this.flatDataJSON[_path]
 		},
-		setDataToState(_name: DataToStateName, _value: any) {
-			this[_name] = _value
+		setNotFoundPath(_path: string, isNotFound: boolean = true) {
+			const index = this.notFoundPath.indexOf(_path)
+			if (index === -1 && isNotFound) {
+				this.notFoundPath.push(_path)
+			} else if (index > -1 && !isNotFound) {
+				this.notFoundPath.splice(index, 1)
+			}
 		},
 		async apiGetRepoInfo() {
 			try {
-				const { code, msg, data }: any = await useApiGetBookmarkRepo({
+				const { statusCode, code, message, data }: any = await useApiGetBookmarkRepo({
 					owner: this.owner,
 					repo: this.repo
 				})
-				if (code !== 200) throw new Error(msg)
+				if (code !== 200 && statusCode !== 404) throw new Error(message)
+				if (statusCode === 404) return this.setNotFoundPath('repo')
 				this.setRepoInfo(data)
+				this.setNotFoundPath('repo', false)
 			} catch (error: any) {
 				return Promise.reject(error)
 			}
 		},
-		apiGetConfigData() {
-			return this.apiGetRepoFileData({ path: 'config.ibookmark.json', stateName: 'repoConfig' })
+		apiGetConfigData(isInit: boolean = false) {
+			const path = 'config.ibookmark.json'
+			return this.apiGetRepoFileData({ path }, isInit)
 		},
-		apiGetWebsiteData() {
-			return this.apiGetRepoFileData({ path: 'website/data.json', stateName: 'websiteData' })
+		apiGetWebsiteData(isInit: boolean = false) {
+			const path = 'website/data.json'
+			return this.apiGetRepoFileData({ path }, isInit)
 		},
 		apiUpdateConfigData() {},
 		apiUpdateWebsiteData(data?: any) {
 			return this.apiUpdateRepoFileData({
 				path: 'website/data.json',
-				stateName: 'websiteData',
 				data
 			})
 		},
-		async apiGetRepoFileData({ path, stateName }: RepoFileData) {
+		async apiGetRepoFileData({ path }: RepoFileData, isInit: boolean) {
 			if (process.server) return
+			if (isInit && (!this.isHasRepo || !this.owner || this.dataJSON[path])) return path
 			try {
 				const params = {
 					owner: this.owner,
 					repo: this.repo,
 					path: path
 				}
-				const { code, msg, data }: any = await useApiGetBookmarkContents(params)
-				if (code !== 200) throw new Error(msg)
+				const { statusCode, code, message, data }: any = await useApiGetBookmarkContents(params)
+				if (code !== 200 && statusCode !== 404) throw new Error(message)
+				if (statusCode === 404) return this.setNotFoundPath(path)
 				const content = JSON.parse(Base64.dec(data.content))
-				this.setDataToState(stateName, content)
 				this.setSha(data.path, data.sha)
+				this.setPathDataToState(path, content)
+				this.setNotFoundPath(path, false)
+				return path
 			} catch (error: any) {
 				return Promise.reject(error)
 			}
 		},
-		async apiUpdateRepoFileData({ path, stateName, data }: RepoFileData) {
+		async apiUpdateRepoFileData({ path, data }: RepoFileData) {
 			if (process.server) return
 			try {
 				const params = {
@@ -144,18 +153,19 @@ export const useRepoStore = defineStore({
 					repo: this.repo,
 					path,
 					sha: this.repoShas[path],
-					content: Base64.enc(JSON.stringify(data ?? this[stateName])),
+					content: Base64.enc(JSON.stringify(data ?? this.dataJSON[path])),
 					message: `iBookmark: update ${path} - ${this.dayjs().format('YYYY-MM-DD HH:mm:ss')}`
 				}
 				const {
+					statusCode,
 					code,
-					msg,
+					message,
 					data: { content }
 				}: any = await useApiUpdateBookmarkFile(params)
-				if (code !== 200) throw new Error(msg)
+				if (code !== 200 && statusCode !== 404) throw new Error(message)
 				await this.setSha(content.path, content.sha)
 				// 获取更新内容
-				if (data) this[stateName] = data
+				if (data) this.setPathDataToState(path, data)
 			} catch (error) {
 				return Promise.reject(error)
 			}

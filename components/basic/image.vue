@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-22 23:27:28
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-12 23:40:50
+ * @LastEditTime: 2023-09-14 23:26:39
  * @FilePath: \iki-bookmark-nuxt3\components\basic\image.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -83,7 +83,7 @@ const handleImageResult = (e: Event) => {
 const vLazy = {
 	mounted(el: HTMLImageElement, binding: DirectiveBinding) {
 		if (!binding.value) loadImage()
-		useIntersectionObserver(el, ([{ isIntersecting }]) => {
+		useIntersectionObserver(el, ([{ isIntersecting }]: { isIntersecting: boolean }[]) => {
 			// 懒加载
 			if (isIntersecting && binding.value) loadImage()
 			emits('image-visibility-change', isIntersecting)
@@ -101,6 +101,7 @@ const vLazy = {
 
 <style scoped lang="less">
 .bm-image {
-	@apply flex justify-center items-center;
+  @apply flex justify-center items-center;
 }
+
 </style>

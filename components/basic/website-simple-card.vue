@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-09-10 23:20:46
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-13 00:21:02
+ * @LastEditTime: 2023-09-15 05:22:13
  * @FilePath: \iki-bookmark-nuxt3\components\basic\website-simple-card.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -13,7 +13,7 @@
 			popper-class="max-w-[12rem]"
 			effect="dark"
 			:content="description"
-			placement="bottom"
+			placement="top"
 			:visible="tooltipVisible && !!description"
 		>
 			<a
@@ -30,6 +30,7 @@
 				@mouseleave="tooltipVisible = false"
 			>
 				<div class="bm-website_content">
+					<el-checkbox v-show="isMultiple" class="!mr-1 !h-full" :model-value="isSelected" />
 					<BasicImage class="mr-2 w-5 h-5" :src="icon" fit="contain" lazy />
 					<el-text class="flex-1" truncated>{{ title }}</el-text>
 					<el-dropdown
@@ -49,6 +50,7 @@
 									:class="item.class"
 									:command="item.text"
 									:divided="item.divided"
+									:disabled="isMultiple && !/批量/.test(item.text)"
 								>
 									<el-space>
 										<Icon :name="item.icon" />
@@ -120,49 +122,37 @@ const vBanlink = {
 }
 </script>
 
-<style>
-.el-dropdown-menu__item.danger {
-	@apply duration-300;
-
-	color: #f06273;
-
-	&:not(.is-disabled):hover {
-		background: #f06273;
-		color: #fff;
-	}
-}
-</style>
-
 <style scoped lang="less">
 .bm-website-simple {
-	@apply rounded-md duration-300;
+  @apply rounded-md duration-300;
 
-	&.is-active {
-		@apply bg-gray-200;
-	}
+  &.is-active {
+    @apply bg-gray-500/20;
+  }
 
-	&.is-selected {
-		@apply outline outline-offset-2 outline-blue-500 duration-100;
-	}
+  &.is-selected {
+    @apply outline outline-offset-2 outline-blue-500 duration-100;
+  }
 
-	&:hover {
-		@apply bg-gray-200;
+  &:hover {
+    @apply bg-gray-500/20;
 
-		.bm-website_bar {
-			@apply opacity-100;
-		}
-	}
+    .bm-website_bar {
+      @apply opacity-100;
+    }
+  }
 
-	.bm-website_bar {
-		@apply self-end opacity-0 duration-300;
+  .bm-website_bar {
+    @apply self-end opacity-0 duration-300;
 
-		&.is-active {
-			@apply opacity-100;
-		}
-	}
+    &.is-active {
+      @apply opacity-100;
+    }
+  }
 
-	.bm-website_content {
-		@apply p-2 flex justify-between;
-	}
+  .bm-website_content {
+    @apply p-2 flex justify-between items-center leading-none;
+  }
 }
+
 </style>

@@ -2,16 +2,16 @@
  * @Author: iuukai
  * @Date: 2023-08-06 12:24:38
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-13 01:46:23
+ * @LastEditTime: 2023-09-17 02:46:20
  * @FilePath: \iki-bookmark-nuxt3\pages\index.vue
  * @Description: 
  * @QQ/微信: 790331286
 -->
 <template>
-	<div>
-		<ClientOnly>
+	<div class="bm-home">
+		<SkeletonWebsiteCard :loading="loading" :count="5" :sub-count="5">
 			<template v-for="(item, i) in defaultMarks" :key="item.category">
-				<div class="list">
+				<div class="bm-home_list">
 					<div :class="['title my-4 font-bold', { 'mt-0': !i }]">{{ item.category }}</div>
 					<div class="grid gap-3 2xl:grid-cols-4 xl:grid-cols-3 md:grid-cols-2 sm:grid-cols-1">
 						<BasicWebsiteCard
@@ -22,20 +22,20 @@
 							:url="website.url"
 							:icon="website.icon"
 							:description="website.description"
-							:isLoading="isLoading"
+							:isSubmitLoading="isSubmitLoading"
 							@star-change="handleClick(website)"
 						/>
 					</div>
+					<div class="bm-divider"></div>
 				</div>
-				<div class="bm-divider"></div>
 			</template>
-		</ClientOnly>
+		</SkeletonWebsiteCard>
 	</div>
 </template>
 
 <script setup lang="ts">
 import defaultMarks from '@/assets/db/index.json'
-import { getId } from '@/utils/custom-function'
+import { generateId } from '@/utils/custom-function'
 import { useRepoStore } from '@/store/modules/repo'
 
 interface FlatWebsite {
@@ -46,64 +46,60 @@ interface FlatWebsite {
 	index: number
 }
 
+const dayjs: any = useDayjs()
 const repoStore = useRepoStore()
-const isLogin = computed(() => repoStore.owner)
-const isHasRepo = computed(() => repoStore.isHasRepo)
-const isLoading = ref(false)
-const flatWebsiteData = computed<FlatWebsite[]>(() => {
-	return repoStore.websiteData.reduce((res, cur) => {
-		const { id: pid, category, list } = cur
-		list.forEach(({ id, title }: any, index: number) => {
-			res.push({ pid, category, id, title, index })
-		})
-		return res
-	}, [])
-})
+const isSubmitLoading = ref(false)
+const loading = ref(true)
+
+// 记录获取数据的文件 path
+const path = ref<string>('')
+const data = computed<any[]>(() => (path.value ? repoStore.dataJSON[path.value] : []))
+const flat = computed<any[]>(() => (path.value ? repoStore.flatDataJSON[path.value] : []))
 
 const isStar = computed(
 	() =>
 		(id: string): boolean =>
-			flatWebsiteData.value.findIndex(website => website.id === id) > -1
+			flat.value.findIndex((website: any) => website.id === id) > -1
 )
 
-watch(
-	[isLogin, isHasRepo],
-	([l, r]) => {
-		if (l && r) initData()
-	},
-	{ immediate: true }
-)
-
-function initData() {
-	console.log(111112)
-	repoStore.apiGetWebsiteData()
+initData()
+async function initData() {
+	try {
+		loading.value = true
+		const res: any = await repoStore.apiGetWebsiteData(true)
+		// 延迟 500ms 避免直接跳过 loading（因为有做缓存，会跳过请求）
+		await new Promise(resolve => setTimeout(resolve, 500))
+		path.value = res
+	} finally {
+		loading.value = false
+	}
 }
 
-const handleClick = async (website: any) => {
+const handleClick = async (websiteInfo: any) => {
+	if (!path.value) return
 	try {
-		isLoading.value = true
+		isSubmitLoading.value = true
 		let msg: string
-		const { id } = website
-		const { websiteData } = repoStore
-		const cloneData: any = websiteData.map((item: any) => ({ ...item, list: [...item.list] }))
+		const { id, tags, ...website } = websiteInfo
+		const cloneData: any = data.value.map((item: any) => ({ ...item, list: [...item.list] }))
 		if (isEmpty(cloneData)) {
 			cloneData.push({
-				sort: 0,
-				id: getId(),
-				category: '默认分类',
-				list: [website]
+				id: generateId(),
+				default: true,
+				category: '默认',
+				list: [{ created_at: dayjs().format(), id, ...website }]
 			})
 			msg = '收藏'
 		} else {
-			const isFind = flatWebsiteData.value.find((item: FlatWebsite) => item.id === id)
+			const isFind = flat.value.find((item: FlatWebsite) => item.id === id)
 			if (isFind) {
 				const { pid, index } = isFind
 				const curCategory = cloneData.find((item: any) => item.id === pid)
 				curCategory.list.splice(index, 1)
 				msg = '取消收藏'
 			} else {
-				const defaultCategory = cloneData.find((item: any) => item.category === '默认分类')
-				defaultCategory.list.push(website)
+				const defaultCategory = cloneData.find((item: any) => item.category === '默认')
+				defaultCategory.list.push({ created_at: dayjs().format(), id, ...website })
 				msg = '收藏'
 			}
 		}
@@ -118,13 +114,13 @@ const handleClick = async (website: any) => {
 	} catch (error: any) {
 		console.error(error.message ?? error)
 	} finally {
-		isLoading.value = false
+		isSubmitLoading.value = false
 	}
 }
 </script>
 
 <style scoped lang="less">
-.bm-divider {
-	@apply mx-auto my-5 w-1/4 border-t-4 border-double border-gray-500/50;
+.bm-home_list {
+	@apply flex flex-col;
 }
 </style>

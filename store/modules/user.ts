@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-26 09:32:42
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-07 02:48:48
+ * @LastEditTime: 2023-09-16 02:23:50
  * @FilePath: \iki-bookmark-nuxt3\store\modules\user.ts
  * @Description:
  * @QQ/微信: 790331286
@@ -20,17 +20,10 @@ interface UserState {
 const TYPE_KEY = '_bm_type'
 const OAUTH_TYPE_KEY = '_bm_oauthType'
 const ACCESS_TOKEN_KEY = '_bm_token'
-const USER_IFNO_KEY = '_bm_userInfo'
 
 const type = useStorage(TYPE_KEY, '')
 const oauthType = useStorage(OAUTH_TYPE_KEY, '')
 const token = useStorage(ACCESS_TOKEN_KEY, '')
-// const userInfo = useStorage(USER_IFNO_KEY, {}, undefined, {
-// 	serializer: {
-// 		read: v => (v ? JSON.parse(v) : null),
-// 		write: v => JSON.stringify(v)
-// 	}
-// })
 
 export const useUserStore = defineStore({
 	id: 'user',
@@ -91,6 +84,10 @@ export const useUserStore = defineStore({
 			} catch (error) {
 				return Promise.reject(error)
 			}
+		},
+		logout() {
+			this.setToken('')
+			this.setUserInfo({})
 		}
 	}
 })

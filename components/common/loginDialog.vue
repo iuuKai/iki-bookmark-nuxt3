@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-27 00:24:23
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-13 02:09:17
+ * @LastEditTime: 2023-09-13 13:09:36
  * @FilePath: \iki-bookmark-nuxt3\components\common\loginDialog.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -25,7 +25,15 @@
 				</el-select>
 			</template>
 		</el-input>
-		<el-button class="my-4 w-full" tag="div" type="primary" @click="handleSignIn">登录</el-button>
+		<el-button
+			:loading="isLoading"
+			class="my-4 w-full"
+			tag="div"
+			type="primary"
+			@click="handleSignIn"
+		>
+			登录
+		</el-button>
 		<el-divider content-position="center">授权登录</el-divider>
 		<div class="bm-icon_bar">
 			<el-icon
@@ -44,6 +52,7 @@
 <script setup lang="ts">
 import { useStorage } from '@vueuse/core'
 import { useUserStore } from '@/store/modules/user'
+import { useRepoStore } from '@/store/modules/repo'
 
 const OAUTH_KEY = 'oauth_data'
 const oauth = useStorage(OAUTH_KEY, null, undefined, {
@@ -53,9 +62,12 @@ const oauth = useStorage(OAUTH_KEY, null, undefined, {
 	}
 })
 const userStore = useUserStore()
+const repoStore = useRepoStore()
 
 const selectType = ref('github')
 const inputToken = ref('')
+const isLoading = ref(false)
+const oauthWindow = ref()
 
 const dialogVisible = computed({
 	get: () => userStore.isLoginDialogShow,
@@ -65,10 +77,6 @@ const token = computed({
 	get: () => userStore.token,
 	set: (val: string) => userStore.setToken(val)
 })
-// const type = computed({
-// 	get: () => userStore.type,
-// 	set: (val: string) => userStore.setType(val)
-// })
 
 const gitIconModules = import.meta.glob('../icon/Git*.vue', {
 	eager: true,
@@ -82,32 +90,60 @@ const iconBar = Object.keys(gitIconModules).map(k => {
 	}
 })
 
+const checkBusyness = () => {
+	if (oauthWindow.value && !oauthWindow.value.closed) return '正在授权，请稍后再试'
+	if (isLoading.value) return '正在登录，请稍后再试'
+}
+
 const login = async (params: { type: string; token: string }) => {
 	try {
-		const { code, msg, data }: any = await useApiGetUserInfo(params)
-		if (code !== 200) throw new Error(msg)
-		userStore.setUserInfo(data)
+		isLoading.value = true
+		const { code, message, data }: any = await useApiGetUserInfo(params)
+		if (code !== 200) throw new Error(message)
+		await userStore.setUserInfo(data)
+		await getRepo()
+
+		dialogVisible.value = false
+	} catch (error) {
+		return Promise.reject(error)
+	} finally {
+		isLoading.value = false
+	}
+}
+
+const getRepo = async () => {
+	try {
+		// 获取仓库信息
+		await repoStore.apiGetRepoInfo()
+		// 获取配置信息
+		await repoStore.apiGetConfigData()
 	} catch (error) {
 		return Promise.reject(error)
 	}
 }
 
 const handleSignIn = async () => {
+	if (checkBusyness()) return ElMessage.error(checkBusyness())
+	if (!inputToken.value) return ElMessage.error('请输入token')
 	try {
+		// isLoading.value = true
 		userStore.setType(selectType.value)
 		await login({ type: selectType.value, token: inputToken.value })
 		token.value = inputToken.value
-		dialogVisible.value = false
 		ElMessage.success('登录成功')
 	} catch (error) {
 		console.error(error)
 		userStore.setToken('')
 		ElMessage.error('登录失败')
+	} finally {
+		// isLoading.value = false
+		clearCache()
 	}
-	clearCache()
 }
 const handleIconClick = async (type: string) => {
+	if (checkBusyness()) return ElMessage.error(checkBusyness())
 	try {
+		oauthWindow.value = true
 		const redirect_uri = location.origin + '/oauth'
 		const { data }: any = await useApiGetAuthorizeUrl({
 			type,
@@ -116,8 +152,9 @@ const handleIconClick = async (type: string) => {
 		new URL(data.url)
 		// 记录授权平台
 		userStore.setOauthType(type)
-		window.open(data.url, '_blank', 'width=500,height=500') as Window
+		oauthWindow.value = window.open(data.url, '_blank', 'width=500,height=500') as Window
 	} catch (error) {
+		oauthWindow.value = null
 		ElMessage.error('前往授权页面失败...')
 	}
 }
@@ -126,22 +163,25 @@ const clearCache = () => {
 	// 清空授权平台
 	userStore.setOauthType(undefined)
 	oauth.value = null
+	oauthWindow.value = null
 }
 
-watch(oauth, async v => {
+watch(oauth, async (v: any) => {
 	if (!v) return
-	const { code, msg, data } = v
-	if (code === 200) {
-		token.value = data.access_token
-		// 获取用户信息
-		await login({ type: userStore.oauthType as string, token: data.access_token })
-		dialogVisible.value = false
-		ElMessage.success('登录成功')
-	} else {
-		console.error(msg)
-		ElMessage.error('授权失败')
+	try {
+		const { code, message, data, type } = v
+		if (code === 200) {
+			token.value = data.access_token
+			userStore.setType(type)
+			await login({ type, token: data.access_token })
+			ElMessage.success('登录成功')
+		} else {
+			console.error(message)
+			ElMessage.error('授权失败')
+		}
+	} finally {
+		clearCache()
 	}
-	clearCache()
 })
 </script>
 

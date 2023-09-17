@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-09-01 19:52:20
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-13 01:34:42
+ * @LastEditTime: 2023-09-16 17:47:47
  * @FilePath: \iki-bookmark-nuxt3\components\common\createDialog.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -29,7 +29,7 @@
 			</template>
 		</div>
 		<div v-if="isNext && isCreating">
-			<el-alert title="请勿中断..." type="error" show-icon :closable="false" />
+			<el-alert title="请勿中断..." type="warning" show-icon :closable="false" />
 		</div>
 		<el-scrollbar
 			v-if="isNext && resultList.length"
@@ -39,24 +39,24 @@
 			native
 		>
 			<ul>
-				<li v-for="item in resultList" :key="item.name" class="flex items-center gap-1">
+				<li v-for="item in resultList" :key="item.value" class="flex items-center gap-1">
 					<template v-if="item.state === 0">
 						<el-icon class="is-loading" size="1rem" color="#409EFF">
 							<Loading />
 						</el-icon>
-						<el-text>正在创建 {{ item.name }}</el-text>
+						<el-text>正在创建 {{ item.label }}</el-text>
 					</template>
 					<template v-if="item.state === 1">
 						<el-icon size="1rem" color="#67C23A">
 							<CircleCheck />
 						</el-icon>
-						<el-text>已创建 {{ item.name }}</el-text>
+						<el-text>已创建 {{ item.label }}</el-text>
 					</template>
 					<template v-if="item.state === -1">
 						<el-icon size="1rem" color="#F56C6C">
 							<CircleClose />
 						</el-icon>
-						<el-text>创建 {{ item.name }} 失败</el-text>
+						<el-text>创建 {{ item.label }} 失败</el-text>
 					</template>
 				</li>
 			</ul>
@@ -84,7 +84,8 @@ import { useRepoStore } from '@/store/modules/repo'
 import { QuestionFilled, Loading, CircleCheck, CircleClose } from '@element-plus/icons-vue'
 
 interface Result {
-	name: string
+	value: string
+	label: string
 	state: number
 }
 
@@ -100,26 +101,16 @@ const dialogVisible = computed<boolean>({
 	get: () => repoStore.isCreateRepoDialogShow,
 	set: (val: boolean) => repoStore.setCreateRepoDialogShow(val)
 })
-const resultList = ref<Result[]>([])
-const resultListCount = computed<number>(() => resultList.value.length)
+const resultList = reactive<Result[]>([])
 const scrollbarRef = ref()
 
-watch(isLogin, v => {
-	if (!v) return
-	const promiseList = [
-		// 获取仓库信息
-		repoStore.apiGetRepoInfo(),
-		// 获取配置信息
-		repoStore.apiGetConfigData()
-	]
-	Promise.all(promiseList)
+watch(dialogVisible, (v: boolean) => {
+	if (!v) {
+		resultList.length = 0
+	}
 })
-
-watch(dialogVisible, v => {
-	// !v && (isCreating.value = false)
-	// isNext.value
-})
-watch(resultListCount, async v => {
+watch(resultList, async (v: any[]) => {
+	if (!v.length) return
 	await nextTick()
 	scrollbarRef.value.setScrollTop(unrefElement(scrollbarRef).scrollHeight)
 })
@@ -134,15 +125,33 @@ const handleConfirm = async () => {
 		const { getResponseList, requestQueue } = await import('./createRequestList')
 		const requestList = getResponseList()
 		requestQueue(
-			(done: boolean) => {
+			async (done: boolean) => {
 				if (done) {
-					isDone.value = true
-					ElNotification({
-						title: 'Success',
-						message: '仓库初始化完成!',
-						type: 'success',
-						duration: 5000
-					})
+					try {
+						const list = [
+							{ reg: /^repo/, request: repoStore.apiGetRepoInfo },
+							{ reg: /^config\./, request: repoStore.apiGetConfigData }
+						]
+
+						const promiseList = list
+							.filter(({ reg }) => {
+								const curResult = resultList.find((item: Result) => reg.test(item.value))
+								const isCreated = curResult.state === 1
+								const isNotFound = repoStore.notFoundPath.includes(curResult.value)
+								return isCreated && isNotFound
+							})
+							.map(({ request }) => request())
+
+						await Promise.all(promiseList)
+					} finally {
+						isDone.value = true
+						ElNotification({
+							title: 'Success',
+							message: '仓库初始化完成!',
+							type: 'success',
+							duration: 5000
+						})
+					}
 				}
 				isCreating.value = false
 			},

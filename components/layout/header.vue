@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-14 01:45:15
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-13 01:14:26
+ * @LastEditTime: 2023-09-16 02:40:58
  * @FilePath: \iki-bookmark-nuxt3\components\layout\header.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -11,15 +11,7 @@
 	<div class="p-6 pl-0">
 		<div class="bm-header-wrapper" align="middle">
 			<div class="flex-1 flex">
-				<!-- <div class="mr-2 cursor-pointer">
-				<Icon name="material-symbols:menu" size="2rem" />
-			</div> -->
 				<div class="max-w-xs flex-1">
-					<!-- <el-input v-model="searchValue">
-						<template #suffix>
-							<Icon name="ph:magnifying-glass"></Icon>
-						</template>
-					</el-input> -->
 					<div class="bm-search_button" v-permissions="[LOGIN_NAME, HASREPO_NAME]">
 						<el-space>
 							<Icon name="ph:magnifying-glass" size="1.2rem"></Icon>
@@ -36,7 +28,19 @@
 			<div>
 				<el-space>
 					<ClientOnly>
-						<el-avatar class="cursor-pointer" :src="avatar" v-permissions="[LOGIN_NAME]" />
+						<el-dropdown trigger="click" :disabled="!isLogin" @command="handleCommand">
+							<el-avatar class="cursor-pointer" :src="avatar" v-permissions="[LOGIN_NAME]" />
+							<template #dropdown>
+								<el-dropdown-menu>
+									<el-dropdown-item command="logout">
+										<el-space>
+											<Icon name="octicon:sign-out-16" />
+											<span>退出</span>
+										</el-space>
+									</el-dropdown-item>
+								</el-dropdown-menu>
+							</template>
+						</el-dropdown>
 						<template #fallback>
 							<el-avatar class="cursor-pointer" :src="defaultAvatar" v-permissions="[LOGIN_NAME]" />
 						</template>
@@ -85,6 +89,16 @@ const state = reactive({
 const { searchValue, switchValue } = toRefs(state)
 const avatar = computed(() => userStore.avatar || defaultAvatar)
 const name = computed(() => (isEmpty(userStore.userInfo) ? '游客' : userStore.userInfo.login))
+const isLogin = computed(() => userStore.isLogin)
+
+const handleCommand = (command: string) => {
+	switch (command) {
+		case 'logout':
+			userStore.logout()
+			navigateTo('/')
+			break
+	}
+}
 </script>
 
 <style scoped lang="less">
