@@ -2,64 +2,67 @@
  * @Author: iuukai
  * @Date: 2023-09-17 04:00:33
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-17 23:19:21
+ * @LastEditTime: 2023-09-20 20:31:54
  * @FilePath: \iki-bookmark-nuxt3\components\basic\Echart\index.vue
  * @Description: 
  * @QQ/微信: 790331286
 -->
 <template>
-	<div>
-		<!-- 客户端组件 -->
-		<ClientOnly fallback-tag="div" fallback="Loading comments...">
-			<VChart class="chart" :option="option" autoresize />
-		</ClientOnly>
-	</div>
+	<div class="h-full" ref="echartRef"></div>
 </template>
 
-<script setup>
-import { ref } from 'vue'
+<script setup lang="ts">
+import chartOptions, { init } from './option.map'
+import type { EChartsOption } from './option.map'
 
-// 引入 vue-echarts 组件
-import VChart, { THEME_KEY } from 'vue-echarts'
-
-import { use } from 'echarts/core'
-import { LineChart } from 'echarts/charts'
-import { GridComponent } from 'echarts/components'
-import { CanvasRenderer } from 'echarts/renderers'
-
-use([GridComponent, LineChart, CanvasRenderer])
-
-// 设置黑暗模式主题
-provide(THEME_KEY, 'dark')
-
-// 图表数据
-const option = ref({
-	xAxis: {
-		type: 'category',
-		data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+const props = defineProps({
+	type: {
+		type: String as any,
+		default: ''
 	},
-	yAxis: {
-		type: 'value',
-		axisLine: {
-			show: true, //这里的show用于设置是否显示y轴那一条线 默认为true
-			lineStyle: {
-				//lineStyle里面写y轴那一条线的样式
-				// color:'#6FC6F3',
-				width: 1 //轴线的粗细 我写的是2 最小为0，值为0的时候线隐藏
-			}
-		}
-	},
-	series: [
-		{
-			data: [150, 230, 224, 218, 135, 147, 260],
-			type: 'line'
-		}
-	]
+	chartData: {
+		type: Object,
+		default: () => ({})
+	}
 })
+
+let echart: any | null
+const echartRef = ref()
+const option = ref<EChartsOption>({})
+
+watch(option, (v: EChartsOption) => {
+	if (isEmpty(v)) return
+	initChart()
+})
+
+onMounted(async () => {
+	initChartData()
+	window.addEventListener('resize', resizeChart)
+})
+onUnmounted(() => {
+	window.removeEventListener('resize', resizeChart)
+})
+
+const initChart = async () => {
+	if (process.server) return
+	if (props.type === 'wordCloudChart') {
+		await import('echarts-wordcloud')
+	}
+	if (!echart) echart = init(unrefElement(echartRef))
+	if (!isEmpty(option.value)) echart.setOption(option.value)
+}
+
+const initChartData = () => {
+	const type = props.type
+	const params = props.chartData
+	if (type && chartOptions[type] && !isEmpty(props.chartData)) {
+		option.value = chartOptions[type](params)
+	}
+}
+
+const resizeChart = () => {
+	if (echart) echart.resize()
+}
 </script>
 
-<style scoped>
-.chart {
-	height: 100vh;
-}
-</style>
+<style scoped lang="less"></style>

@@ -2,12 +2,12 @@
  * @Author: iuukai
  * @Date: 2023-08-30 17:20:34
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-13 02:27:48
- * @FilePath: \iki-bookmark-nuxt3\composables\clientRequest.ts
+ * @LastEditTime: 2023-09-23 23:58:57
+ * @FilePath: \iki-bookmark-nuxt3\composables\useClientRequest.ts
  * @Description:
  * @QQ/微信: 790331286
  */
-import { ElMessage } from 'element-plus'
+// import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/store/modules/user'
 
 interface RequestOptions {
@@ -17,23 +17,25 @@ interface RequestOptions {
 	params?: any
 }
 
-export const clientRequest = (options: RequestOptions) => {
+export const useClientRequest = (options: RequestOptions) => {
 	const userStore = useUserStore()
 	const { url = '', method = 'get', headers = {}, params = {} } = options
+	const isGET = method.toLowerCase() === 'get'
 	const token = userStore.token || params.token
 	const type = userStore.oauthType || userStore.type
 	if (type && !params.type) params['type'] = type
 
 	return new Promise((resolve, reject) => {
 		useFetch(url, {
-			key: String(Math.random()),
+			key: url + Date.now(),
 			method,
 			headers: { ...headers },
-			params: useToLower(method) === 'get' ? { ...params } : undefined,
-			body: useToLower(method) === 'post' ? params : undefined,
-			onRequest({ request, options }) {
-				const { headers }: any = options
-				if (token) headers['Authorization'] = `Bearer ${token}`
+			timeout: 15000,
+			// 失败后，不自动重复发送
+			// autoRetry: false,
+			onRequest({ request, options }: any) {
+				if (token) options.headers['Authorization'] = `Bearer ${token}`
+				options[isGET ? 'params' : 'body'] = params
 			},
 			onRequestError({ request, options, error }) {
 				// ElMessage.closeAll()
@@ -45,7 +47,7 @@ export const clientRequest = (options: RequestOptions) => {
 				// ElMessage.error(msg ?? 'Sorry, The Data Request Failed.')
 			},
 			onResponseError({ request, response, options }) {
-				console.log('🚀 ~ file: clientRequest.ts:48 ~ onResponseError ~ request:', request)
+				console.log('🚀 ~ file: useClientRequest.ts:48 ~ onResponseError ~ request:', request)
 			}
 		})
 	})

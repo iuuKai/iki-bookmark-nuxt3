@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-14 06:20:11
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-17 03:01:08
+ * @LastEditTime: 2023-09-24 00:16:20
  * @FilePath: \iki-bookmark-nuxt3\pages\bookmarks.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -28,13 +28,9 @@
 			</el-button>
 		</div>
 
-		<SkeletonCategoryCard :loading="loading" :count="5">
+		<Skeleton type="B" :loading="loading" :count="5">
 			<div class="mt-4 grid grid-cols-1 gap-y-4">
-				<div v-if="isEmpty(data)" class="bm-bookmarks_card">
-					<el-card>
-						<el-empty :image-size="100" description="暂无数据" />
-					</el-card>
-				</div>
+				<CommonEmpty v-if="isEmpty(data)" />
 				<template v-else>
 					<BasicCategoryCard
 						v-for="item in data"
@@ -47,7 +43,7 @@
 					/>
 				</template>
 			</div>
-		</SkeletonCategoryCard>
+		</Skeleton>
 
 		<ClientOnly>
 			<el-dialog
@@ -56,26 +52,27 @@
 				width="500px"
 				class="bm-bookmarks_dialog"
 				:close-on-click-modal="false"
-				@closed=""
 			>
-				<CommonDialogUpdateCategory
-					v-if="/分类/.test(dialogTitle)"
-					ref="updateDialogRef"
-					v-model:form-data="curCategoryInfo"
-					:category-list="categoryList"
-					:isSubmitLoading="isSubmitLoading"
-					@cancel="dialogVisible = false"
-					@confirm="handleSubmit('category')"
-				/>
-				<CommonDialogUpdateWebsite
-					v-else
-					ref="updateDialogRef"
-					v-model:form-data="curWebsiteInfo"
-					:category-list="categoryList"
-					:isSubmitLoading="isSubmitLoading"
-					@cancel="dialogVisible = false"
-					@confirm="handleSubmit('website')"
-				/>
+				<div>
+					<CommonDialogUpdateCategory
+						v-if="/分类/.test(dialogTitle)"
+						ref="updateDialogRef"
+						v-model:form-data="curCategoryInfo"
+						:category-list="categoryList"
+						:isSubmitLoading="isSubmitLoading"
+						@cancel="dialogVisible = false"
+						@confirm="handleSubmit('category')"
+					/>
+					<CommonDialogUpdateWebsite
+						v-else
+						ref="updateDialogRef"
+						v-model:form-data="curWebsiteInfo"
+						:category-list="categoryList"
+						:isSubmitLoading="isSubmitLoading"
+						@cancel="dialogVisible = false"
+						@confirm="handleSubmit('website')"
+					/>
+				</div>
 			</el-dialog>
 		</ClientOnly>
 	</div>
@@ -83,11 +80,10 @@
 
 <script setup lang="ts">
 import { useRepoStore } from '@/store/modules/repo'
-import { copy, generateId } from '@/utils/custom-function'
+import { dayjs } from 'element-plus'
 
 definePageMeta({ middleware: ['a-need-login', 'b-need-repo'] })
 
-const dayjs: any = useDayjs()
 const repoStore = useRepoStore()
 const updateDialogRef = ref()
 const dialogTitle = ref<string>('')
@@ -115,12 +111,14 @@ const dialogVisible = computed({
 })
 
 watch(dialogVisible, (v: boolean) => {
-	if (!v && unref(updateDialogRef)?.clearForm) unref(updateDialogRef).clearForm()
+	const defaultCategoryId =
+		categoryList.value.find(({ label }: { label: string }) => label === '默认')?.value ?? ''
+	if (!v && unref(updateDialogRef)?.clearForm)
+		unref(updateDialogRef).clearForm({ categoryId: defaultCategoryId })
 	// 初始化
 	if (isEmpty(curWebsiteInfo.value)) {
 		curWebsiteInfo.value = {
-			categoryId:
-				categoryList.value.find(({ label }: { label: string }) => label === '默认')?.value ?? ''
+			categoryId: defaultCategoryId
 		}
 	}
 })
@@ -142,7 +140,10 @@ watch(isMultiple, (v: boolean) => {
 	}
 })
 
-initData()
+onBeforeMount(() => {
+	initData()
+})
+
 async function initData() {
 	try {
 		loading.value = true
@@ -159,9 +160,18 @@ const handleSubmit = async (type: string) => {
 	try {
 		isSubmitLoading.value = true
 		const cloneData: any = data.value.map((item: any) => ({ ...item, list: [...item.list] }))
+
 		if (type === 'website') updateWebsite(cloneData)
 		else updateCategory(cloneData)
 		await repoStore.apiUpdateWebsiteData(cloneData)
+		if (type === 'website') {
+			const total = cloneData.reduce((res: any, cur: any) => {
+				res += cur.list.length
+				return res
+			}, 0)
+			const cloneConfig = configLogData({ total, add: 1 })
+			await repoStore.apiUpdateConfigData(cloneConfig)
+		}
 		ElMessage.success(`${dialogTitle.value}成功!`)
 		dialogVisible.value = false
 	} catch (error: any) {
@@ -200,7 +210,7 @@ const handleCategoryCommand = async (command: string, item?: any) => {
 const handleWebsiteCommand = async (command: string, item: any, pid: string) => {
 	switch (command) {
 		case '复制链接': {
-			const [err, succ]: any = await copy(item.url)
+			const [err, succ]: any = await useCopy(item.url)
 			if (err) ElMessage.error('复制失败')
 			else ElMessage.success('复制成功')
 			break
@@ -223,7 +233,7 @@ const updateCategory = (cloneData: any) => {
 	const isNewCategory: boolean = !id
 	if (isNewCategory) {
 		cloneData.push({
-			id: generateId(),
+			id: useGenerateId(),
 			category: categoryObj.category,
 			list: []
 		})
@@ -243,6 +253,14 @@ const deleteCategory = (id: string, name: string) => {
 				.map((item: any) => ({ ...item, list: [...item.list] }))
 				.filter((item: any) => item.id !== id)
 			await repoStore.apiUpdateWebsiteData(cloneData)
+
+			const total = cloneData.reduce((res: any, cur: any) => {
+				res += cur.list.length
+				return res
+			}, 0)
+			const del = data.value.find((item: any) => item.id === id).list.length
+			const cloneConfig = configLogData({ total, del })
+			await repoStore.apiUpdateConfigData(cloneConfig)
 			ElMessage.success('删除成功')
 		} catch (error) {
 			ElMessage.error('删除失败，请重试')
@@ -263,24 +281,24 @@ const updateWebsite = (cloneData: any) => {
 	if (isNetWebsite) {
 		if (isNewCategory) {
 			cloneData.push({
-				id: generateId(),
+				id: useGenerateId(),
 				// el-select 新建，categoryId 为 label
 				category: categoryId,
-				list: [{ created_at: dayjs().format(), id: generateId(), ...website }]
+				list: [{ created_at: dayjs().format(), id: useGenerateId(), ...website }]
 			})
 		} else {
 			const curCategory = cloneData.find((item: any) => item.id === categoryId)
-			curCategory.list.push({ created_at: dayjs().format(), id: generateId(), ...website })
+			curCategory.list.push({ created_at: dayjs().format(), id: useGenerateId(), ...website })
 		}
 	} else {
-		// 删除旧数据
+		// 更改分类，需要删除在旧分类里的数据
 		const { pid, index } = flat.value.find((item: any) => item.id === website.id)
 		const oldCategory = cloneData.find((item: any) => item.id === pid)
 		oldCategory.list.splice(index, 1)
 
 		if (isNewCategory) {
 			cloneData.push({
-				id: generateId(),
+				id: useGenerateId(),
 				// el-select 新建，categoryId 为 label
 				category: categoryId,
 				list: [{ ...website }]
@@ -304,12 +322,53 @@ const deleteWebsite = async (id?: string, pid?: string) => {
 			curCategory.list.splice(index, 1)
 		}
 		await repoStore.apiUpdateWebsiteData(cloneData)
+
+		const total = cloneData.reduce((res: any, cur: any) => {
+			res += cur.list.length
+			return res
+		}, 0)
+		const del = selectList.value.length || 1
+		const cloneConfig = configLogData({ total, del })
+		await repoStore.apiUpdateConfigData(cloneConfig)
+
 		ElMessage.success('删除成功!')
 		selectList.value = []
 	} catch (error: any) {
 		console.error(error.message ?? error)
 		ElMessage.error('删除失败，请重试')
 	}
+}
+
+const configLogData = ({
+	total = 0,
+	add = 0,
+	del = 0
+}: {
+	total: number
+	add?: number
+	del?: number
+}) => {
+	const cloneConfig = JSON.parse(JSON.stringify(repoStore.CONFIG))
+	const log = { ...cloneConfig.log }
+	const p = path.value
+	const curDate = dayjs().format('YYYY-MM-DD')
+	if (log && log[p] && curDate in log[p]) {
+		log[p][curDate] = {
+			total,
+			add: log[p][curDate].add + add,
+			del: log[p][curDate].del + del
+		}
+	} else {
+		;(log && log[p] ? log : (cloneConfig.log = {}) && cloneConfig.log)[p] = {
+			[curDate]: {
+				total,
+				add,
+				del
+			}
+		}
+	}
+
+	return { ...cloneConfig }
 }
 
 const handleChangeDialog = (title: string) => {

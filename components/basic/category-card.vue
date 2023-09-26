@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-09-14 20:36:13
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-15 18:33:32
+ * @LastEditTime: 2023-09-19 01:39:22
  * @FilePath: \iki-bookmark-nuxt3\components\basic\category-card.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -120,7 +120,7 @@ const handleSelectChange = (item: any) => {
 	}
 
 	.bm-category_content {
-		@apply px-4 py-3 grid gap-y-4 gap-x-6 2xl:grid-cols-5 xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-3 sm:grid-cols-2;
+		@apply flex-1 px-4 py-3 grid gap-y-4 gap-x-6 2xl:grid-cols-5 xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-3 sm:grid-cols-2;
 	}
 
 	.bm-divider_vertical {

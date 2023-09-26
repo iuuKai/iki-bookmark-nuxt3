@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-09-11 09:58:49
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-17 02:55:08
+ * @LastEditTime: 2023-09-25 00:46:13
  * @FilePath: \iki-bookmark-nuxt3\components\common\dialog\update-website.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -37,7 +37,7 @@
 							@show="isPopoverShow = true"
 							@hide="isPopoverShow = false"
 						>
-							123123
+							<div>123</div>
 							<template #reference>
 								<div :class="['bm-upload-icon', { 'is-active': isPopoverShow }]">
 									<img v-if="form.icon" :src="form.icon" alt="" />
@@ -59,12 +59,12 @@
 					<el-form-item prop="categoryId">
 						<el-select
 							v-model="form.categoryId"
+							filterable
+							allow-create
+							:reserve-keyword="false"
 							class="w-full"
 							size="large"
 							placeholder="网站分类"
-							filterable
-							allow-create
-							default-first-option
 						>
 							<el-option
 								v-for="item in list"
@@ -105,8 +105,6 @@
 </template>
 
 <script setup lang="ts">
-import { transformAbsolutePath } from '@/utils/custom-function'
-import { generateId } from '@/utils/custom-function'
 import type { FormInstance, FormItemInstance } from 'element-plus'
 
 const emits = defineEmits(['update:formData', 'cancel', 'confirm'])
@@ -154,14 +152,13 @@ const rules = ref({
 	],
 	title: [{ required: true, message: '请输入网站名称', trigger: 'blur' }]
 })
-
+const defaultCategory = '默认'
 const activeName = ref('1')
 const isPopoverShow = ref(false)
 const isGetWebContentLoading = ref(false)
 const isBusyness = computed(() => props.isSubmitLoading || isGetWebContentLoading.value)
 const list = computed(() => {
 	const isEmptyCategory = isEmpty(props.categoryList)
-	const defaultCategory = '默认'
 	const arr = isEmptyCategory
 		? [
 				{
@@ -189,10 +186,10 @@ const handleGetWebContent = async (formItemEl: FormItemInstance | undefined, url
 	try {
 		await validateWebsiteUrl(formItemEl)
 		isGetWebContentLoading.value = true
-		const { code, msg, data }: any = await useApiGetWebContent(url)
-		if (code !== 200) throw new Error(msg)
-		form.value.icon = transformAbsolutePath(url, data.icon)
-		form.value.title = data.title.slice(0, MaxLengthTitle)
+		const { statusCode, statusMessage, data = {} }: any = await useApiGetWebContent({ url })
+		if (statusCode) throw new Error(statusMessage)
+		form.value.icon = data.icon
+		form.value.title = data.title.slice(0, MaxLengthTitle) || data.url
 		form.value.description = data.description.slice(0, MaxLengthDescription)
 	} catch (error) {
 		ElMessage.error('抓取失败')
@@ -210,12 +207,12 @@ const handleConfirm = async (formEl: FormInstance | undefined) => {
 }
 
 const clearForm = () => {
-	form.value = {}
-	activeName.value = '1'
-	isGetWebContentLoading.value = false
 	if (formRef.value) {
 		formRef.value.resetFields()
 	}
+	form.value = {}
+	activeName.value = '1'
+	isGetWebContentLoading.value = false
 }
 
 defineExpose({

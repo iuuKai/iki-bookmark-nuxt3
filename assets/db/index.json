@@ -955,8 +955,8 @@
 			{
 				"id": "7cefa37dd2f0e07f",
 				"title": "Snap",
-				"url": "https://snapsvg.io/",
-				"icon": "https://snapsvg.io/assets/favicon.ico",
+				"url": "http://snapsvg.io/",
+				"icon": "http://snapsvg.io/assets/favicon.ico",
 				"description": "Snap is a JavaScript library for creating animations on scroll.",
 				"tags": ["动画库"]
 			},

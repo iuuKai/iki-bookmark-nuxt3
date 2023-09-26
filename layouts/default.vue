@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-08 13:03:26
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-16 03:09:15
+ * @LastEditTime: 2023-09-26 19:46:11
  * @FilePath: \iki-bookmark-nuxt3\layouts\default.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -19,10 +19,12 @@
 					<section class="flex-auto flex flex-col">
 						<LayoutHeader :menu-title="curMenuTitle" />
 						<div class="bm-scroll-wrapper">
-							<slot />
+							<div class="mx-auto w-[calc(100%-30px)] h-full">
+								<slot />
+							</div>
 						</div>
 					</section>
-					<el-backtop target=".bm-scroll-wrapper" :right="20" :bottom="20" />
+					<el-backtop class="!z-10" target=".bm-scroll-wrapper" :right="20" :bottom="20" />
 				</div>
 			</CommonContainer>
 		</el-main>
@@ -36,6 +38,7 @@
 		<ClientOnly>
 			<CommonLoginDialog />
 			<CommonCreateDialog />
+			<CommonSearchDialog />
 		</ClientOnly>
 	</div>
 </template>
@@ -53,7 +56,8 @@ const curMenuTitle = ref('')
 			@apply flex flex-1 h-full rounded-3xl backdrop-blur-md bg-white/60 overflow-hidden;
 
 			.bm-scroll-wrapper {
-				@apply mr-3 pr-3 pl-6 mb-6 h-full overflow-y-auto;
+				// pr-3 pl-6
+				@apply mx-3 mb-6 h-full overflow-y-auto;
 			}
 		}
 	}

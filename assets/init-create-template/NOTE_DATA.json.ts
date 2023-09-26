@@ -7,6 +7,6 @@
  * @Description:
  * @QQ/微信: 790331286
  */
-const NOTE_DATA = JSON.stringify([])
+const NOTE_DATA: [] = []
 
 export default NOTE_DATA

@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-19 13:47:59
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-10 23:47:05
+ * @LastEditTime: 2023-09-27 00:14:10
  * @FilePath: \iki-bookmark-nuxt3\components\layout\aside.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -13,16 +13,21 @@
 			<img src="~/assets/logo.png" alt="" />
 		</div>
 		<div class="bm-aside_nav">
-			<div v-for="menu in menus" :key="menu.path" @click="handle(menu.path)">
-				<div
-					class="h-9 flex justify-start items-center cursor-pointer"
-					v-permissions="menu.permissions"
-				>
+			<div
+				v-for="menu in menus"
+				:key="menu.path"
+				:class="['bm-aside_item_wrap', { 'is-active': menu.path === route.path }]"
+				@click="handle(menu.path)"
+			>
+				<div class="bm-aside_item" v-permissions="menu.permissions">
 					<el-space>
-						<Icon :name="menu.icon" size="20px" />
+						<ClientOnly fallback-tag="span">
+							<Icon :name="menu.icon" size="20px" />
+						</ClientOnly>
 						<span>{{ menu.name }}</span>
 					</el-space>
 				</div>
+				<!-- <div class="bm-nav_propel"></div> -->
 			</div>
 		</div>
 	</div>
@@ -60,7 +65,28 @@ watch(
 	}
 
 	.bm-aside_nav {
-		@apply grid grid-cols-1 gap-4 select-none overflow-x-auto;
+		@apply flex flex-col space-y-4 select-none overflow-x-auto;
+
+		.bm-aside_item_wrap {
+			@apply relative border-l-4 border-transparent;
+
+			&.is-active {
+				@apply border-indigo-500;
+
+				.bm-aside_item {
+					@apply text-white from-indigo-500;
+				}
+			}
+
+			.bm-nav_propel {
+				// @apply absolute top-0 right-0 w-0.5 h-full bg-gray-200;
+			}
+
+			.bm-aside_item {
+				@apply ml-2 pl-2 h-9 flex justify-start items-center bg-gradient-to-r cursor-pointer;
+				@apply rounded-md rounded-tr-none rounded-br-none duration-300;
+			}
+		}
 	}
 }
 </style>

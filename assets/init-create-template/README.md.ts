@@ -2,16 +2,12 @@
  * @Author: iuukai
  * @Date: 2023-09-03 11:12:34
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-03 18:03:50
+ * @LastEditTime: 2023-09-26 13:24:47
  * @FilePath: \iki-bookmark-nuxt3\assets\init-create-template\README.md.ts
  * @Description:
  * @QQ/微信: 790331286
  */
-import { useAuthorStore } from '@/store/modules/author'
-
-const authorStore = useAuthorStore()
-const config = useRuntimeConfig()
-const baseURL = config?.public?.baseURL
+const { baseURL, author } = useAppConfig()
 
 const url = baseURL || 'http://localhost:3000/'
 
@@ -19,7 +15,7 @@ const README = `# iBookmark 私人书签仓库
 
 <p align="center">
   <a href="${url}">
-    <img width="200" src="${url}/favicon.ico">
+    <img width="200" src="${url.replace(/\/$/, '')}/favicon.ico">
   </a>
 </p>
 
@@ -41,13 +37,13 @@ const README = `# iBookmark 私人书签仓库
 - \`image\/\`: 私人图片收藏
 - \`**\/data.json\`: 数据存储
 
-**Author**: **${authorStore.AUTHOR.name}**
+**Author**: **${author.owner}**
 
-**Email**: ${authorStore.AUTHOR.email}
+**Email**: ${author.email}
 
-**GitHub**: [${authorStore.AUTHOR.github}](${authorStore.AUTHOR.github})
+**GitHub**: [${author.github}](${author.github})
 
-**Gitee**: [${authorStore.AUTHOR.gitee}](${authorStore.AUTHOR.gitee})
+**Gitee**: [${author.gitee}](${author.gitee})
 `
 
 export default README

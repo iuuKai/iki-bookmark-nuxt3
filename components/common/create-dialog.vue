@@ -2,8 +2,8 @@
  * @Author: iuukai
  * @Date: 2023-09-01 19:52:20
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-16 17:47:47
- * @FilePath: \iki-bookmark-nuxt3\components\common\createDialog.vue
+ * @LastEditTime: 2023-09-26 19:54:27
+ * @FilePath: \iki-bookmark-nuxt3\components\common\create-dialog.vue
  * @Description: 
  * @QQ/微信: 790331286
 -->
@@ -80,6 +80,7 @@
 <script setup lang="ts">
 import { useUserStore } from '@/store/modules/user'
 import { useRepoStore } from '@/store/modules/repo'
+import { useGlobalStore } from '@/store/modules/global'
 
 import { QuestionFilled, Loading, CircleCheck, CircleClose } from '@element-plus/icons-vue'
 
@@ -91,6 +92,7 @@ interface Result {
 
 const userStore = useUserStore()
 const repoStore = useRepoStore()
+const globalStore = useGlobalStore()
 
 const isNext = ref<boolean>(false)
 const isCreating = ref<boolean>(false)
@@ -98,8 +100,8 @@ const isDone = ref<boolean>(false)
 const isLogin = computed<boolean>(() => userStore.isLogin)
 const isHasRepo = computed<boolean>(() => repoStore.isHasRepo)
 const dialogVisible = computed<boolean>({
-	get: () => repoStore.isCreateRepoDialogShow,
-	set: (val: boolean) => repoStore.setCreateRepoDialogShow(val)
+	get: () => globalStore.isCreateRepoDialogShow,
+	set: (val: boolean) => globalStore.setCreateRepoDialogShow(val)
 })
 const resultList = reactive<Result[]>([])
 const scrollbarRef = ref()
@@ -122,7 +124,7 @@ const handleConfirm = async () => {
 	isNext.value = true
 	if (!isCreating.value && !isDone.value) {
 		isCreating.value = true
-		const { getResponseList, requestQueue } = await import('./createRequestList')
+		const { getResponseList, requestQueue } = await import('./create-request-list')
 		const requestList = getResponseList()
 		requestQueue(
 			async (done: boolean) => {

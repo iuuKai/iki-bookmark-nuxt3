@@ -7,6 +7,6 @@
  * @Description:
  * @QQ/微信: 790331286
  */
-const PLAN_DATA = JSON.stringify([])
+const PLAN_DATA: [] = []
 
 export default PLAN_DATA

@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-23 04:19:30
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-13 18:45:02
+ * @LastEditTime: 2023-09-26 19:26:44
  * @FilePath: \iki-bookmark-nuxt3\components\basic\website-card.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -11,7 +11,7 @@
 	<div class="bm-website_card">
 		<a v-loading="isLoading" v-ban-click class="bm-website" :href="url" target="_blank">
 			<div class="bm-website_header" :title="title">
-				<BasicImage class="w-10 h-10" :src="icon" fit="contain" lazy />
+				<BasicImage class="w-10 h-10" :src="icon" fit="contain" lazy circle />
 				<el-text class="bm-website_title" truncated tag="div">{{ title }}</el-text>
 				<div
 					:class="['bm-website_bar', { 'is-star': isStar }]"

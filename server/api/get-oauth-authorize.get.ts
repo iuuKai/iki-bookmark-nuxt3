@@ -2,25 +2,25 @@
  * @Author: iuukai
  * @Date: 2023-08-28 10:12:13
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-02 02:12:46
- * @FilePath: \iki-bookmark-nuxt3\server\api\getOauthAuthorize.get.ts
+ * @LastEditTime: 2023-09-22 21:49:25
+ * @FilePath: \iki-bookmark-nuxt3\server\api\get-oauth-authorize.get.ts
  * @Description:
  * @QQ/微信: 790331286
  */
-import config from '../config'
+import { H3Event } from 'h3'
 
 interface Authorize {
 	redirect_uri: string
-	type: 'github' | 'gitee'
+	type: Type
 }
 
-export default defineEventHandler(event => {
+export default defineEventHandler(async (event: H3Event) => {
 	return new Promise((resolve, reject) => {
-		const mode = process.env.NODE_ENV === 'production' ? 'build' : 'dev'
+		const host = getRequestHost(event)
 		const { type, redirect_uri }: Authorize = getQuery(event)
+		const { client_id } = useGitConfig(host, type)
 
 		if (redirect_uri && type) {
-			const client_id = config[mode][type]['client_id']
 			const url =
 				type == 'github'
 					? `https://github.com/login/oauth/authorize?client_id=${client_id}&redirect_uri=${redirect_uri}&scope=${encodeURIComponent(

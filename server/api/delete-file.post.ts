@@ -1,13 +1,15 @@
 /*
  * @Author: iuukai
- * @Date: 2023-09-02 13:15:08
+ * @Date: 2023-09-20 07:36:42
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-02 14:26:40
- * @FilePath: \iki-bookmark-nuxt3\server\api\createFile.post.ts
+ * @LastEditTime: 2023-09-23 02:30:01
+ * @FilePath: \iki-bookmark-nuxt3\server\api\delete-file.post.ts
  * @Description:
  * @QQ/微信: 790331286
  */
-export default defineEventHandler(async event => {
+import { H3Event } from 'h3'
+
+export default defineEventHandler(async (event: H3Event) => {
 	const body = await readBody(event)
 	const { authorization } = getHeaders(event)
 	const { type, owner, repo, path, ...params } = body
@@ -16,5 +18,5 @@ export default defineEventHandler(async event => {
 			? `https://api.github.com/repos/${owner}/${repo}/contents/${path}`
 			: `https://gitee.com/api/v5/repos/${owner}/${repo}/contents/${path}`
 
-	return serverRequest(type === 'github' ? 'put' : 'post', url, params, authorization)
+	return useServerRequest('delete', url, params, authorization)
 })

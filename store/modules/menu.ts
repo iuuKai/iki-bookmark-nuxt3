@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-09-05 04:36:54
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-17 00:51:13
+ * @LastEditTime: 2023-09-26 14:43:50
  * @FilePath: \iki-bookmark-nuxt3\store\modules\menu.ts
  * @Description:
  * @QQ/微信: 790331286
@@ -47,12 +47,12 @@ export const useMenuStore = defineStore({
 			// 	path: '/funny',
 			// 	icon: 'game-icons:magic-portal'
 			// },
-			{
-				name: '计划',
-				path: '/plans',
-				icon: 'mdi:calendar-edit-outline',
-				permissions: [LOGIN_NAME, HASREPO_NAME]
-			},
+			// {
+			// 	name: '计划',
+			// 	path: '/plans',
+			// 	icon: 'mdi:calendar-edit-outline',
+			// 	permissions: [LOGIN_NAME, HASREPO_NAME]
+			// },
 			{
 				name: '反馈',
 				path: '/issues',

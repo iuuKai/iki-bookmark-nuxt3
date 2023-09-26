@@ -7,6 +7,6 @@
  * @Description:
  * @QQ/微信: 790331286
  */
-const WEBSITE_DATA = JSON.stringify([])
+const WEBSITE_DATA: [] = []
 
 export default WEBSITE_DATA

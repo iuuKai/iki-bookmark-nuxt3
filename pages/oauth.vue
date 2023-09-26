@@ -2,24 +2,29 @@
  * @Author: iuukai
  * @Date: 2023-08-28 08:38:08
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-14 13:41:46
+ * @LastEditTime: 2023-09-26 22:16:32
  * @FilePath: \iki-bookmark-nuxt3\pages\oauth.vue
  * @Description: 
  * @QQ/微信: 790331286
 -->
 <template>
-	<div>demo</div>
+	<div class="bm-oauth">
+		<BasicEchartLogo :title="commentStore.REPO" :font-size="100" :duration="5000" />
+	</div>
 </template>
 
 <script setup lang="ts">
 import { useStorage } from '@vueuse/core'
 import { useUserStore } from '@/store/modules/user'
+import { useCommentStore } from '@/store/modules/comment'
 
 definePageMeta({
-	layout: false
+	layout: false,
+	middleware: ['c-access-forbidden']
 })
 
 const userStore = useUserStore()
+const commentStore = useCommentStore()
 const code = computed(() => (process.client && /code=([^&]*)/.exec(location.search)?.[1]) ?? '')
 const oauthError = computed(
 	() => (process.client && /error=([^&]*)/.exec(location.search)?.[1]) ?? ''
@@ -69,4 +74,8 @@ watch(
 )
 </script>
 
-<style scoped lang="less"></style>
+<style scoped lang="less">
+.bm-oauth {
+	@apply w-screen h-screen;
+}
+</style>

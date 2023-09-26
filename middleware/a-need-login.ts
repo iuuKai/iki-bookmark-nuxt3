@@ -2,8 +2,7 @@ import { useUserStore } from '@/store/modules/user'
 
 export default defineNuxtRouteMiddleware((to, from) => {
 	if (process.server) return
-	const userStore = useUserStore()
-	const isLogin = userStore.isLogin
+	const { isLogin } = useUserStore()
 	if (!isLogin) {
 		return navigateTo('/')
 	}

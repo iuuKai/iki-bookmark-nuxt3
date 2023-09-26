@@ -2,16 +2,17 @@
  * @Author: iuukai
  * @Date: 2023-09-01 23:33:27
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-16 19:20:53
+ * @LastEditTime: 2023-09-26 12:59:52
  * @FilePath: \iki-bookmark-nuxt3\store\modules\repo.ts
  * @Description:
  * @QQ/微信: 790331286
  */
 import { defineStore } from 'pinia'
 import { useUserStore } from './user'
+import { useCommentStore } from './comment'
+import { dayjs } from 'element-plus'
 
 interface RepoState {
-	isCreateRepoDialogShow: boolean
 	repoInfo: any
 	repoShas: any
 	initRepoFile: string[]
@@ -25,7 +26,7 @@ interface RepoFileData {
 	data?: any
 }
 
-const initRepoFile = () => [
+const initRepoFile = (): string[] => [
 	'README.md',
 	'config.ibookmark.json',
 	'website/data.json',
@@ -39,7 +40,6 @@ export const useRepoStore = defineStore({
 	state: (): RepoState => ({
 		// 初始文件
 		initRepoFile: initRepoFile(),
-		isCreateRepoDialogShow: false,
 		repoInfo: {},
 		repoShas: {},
 		notFoundPath: [],
@@ -54,19 +54,29 @@ export const useRepoStore = defineStore({
 			return useUserStore().loginName
 		},
 		repo(): string {
-			return 'my-bookmarks'
+			return useAppConfig().db_repo
 		},
-		dayjs(): any {
-			return useDayjs()
+		CONFIG(): any {
+			const path = this.initRepoFile.find(p => /^config\./.test(p)) ?? ''
+			return { ...this.dataJSON[path] }
 		}
 	},
 	actions: {
-		setCreateRepoDialogShow(_show: boolean) {
-			this.isCreateRepoDialogShow = _show
+		clear() {
+			this.repoInfo = {}
+			this.repoShas = {}
+			this.notFoundPath = []
+			this.dataJSON = {}
+			this.flatDataJSON = {}
+			useCommentStore().clear()
 		},
 		// 每次更新文件，sha都会更新
-		setSha(path: string, _sha: string) {
-			this.repoShas[path] = _sha
+		setSha(_path: string, _sha?: string) {
+			if (_sha) {
+				this.repoShas[_path] = _sha
+			} else {
+				delete this.repoShas[_path]
+			}
 		},
 		setRepoInfo(_info: any) {
 			this.repoInfo = _info
@@ -75,38 +85,26 @@ export const useRepoStore = defineStore({
 			this.dataJSON[_path] = _data
 			this.setFlatPathDataToState(_path, _data)
 		},
+		// 扁平化
 		setFlatPathDataToState(_path: string, _data?: any[]) {
 			const data = _data ?? this.dataJSON[_path]
 			if (!isArray(data)) return
 			this.flatDataJSON[_path] = data.reduce((res: any[], cur: any) => {
 				const { id: pid, category, list } = cur
-				list.forEach(({ id, title }: any, index: number) => {
-					res.push({ pid, category, id, title, index })
+				list.forEach(({ id, title, created_at }: any, index: number) => {
+					res.push({ pid, category, id, title, index, created_at })
 				})
 				return res
 			}, [])
 			return this.flatDataJSON[_path]
 		},
+		// 不存在，需要新建
 		setNotFoundPath(_path: string, isNotFound: boolean = true) {
 			const index = this.notFoundPath.indexOf(_path)
 			if (index === -1 && isNotFound) {
 				this.notFoundPath.push(_path)
 			} else if (index > -1 && !isNotFound) {
 				this.notFoundPath.splice(index, 1)
-			}
-		},
-		async apiGetRepoInfo() {
-			try {
-				const { statusCode, code, message, data }: any = await useApiGetBookmarkRepo({
-					owner: this.owner,
-					repo: this.repo
-				})
-				if (code !== 200 && statusCode !== 404) throw new Error(message)
-				if (statusCode === 404) return this.setNotFoundPath('repo')
-				this.setRepoInfo(data)
-				this.setNotFoundPath('repo', false)
-			} catch (error: any) {
-				return Promise.reject(error)
 			}
 		},
 		apiGetConfigData(isInit: boolean = false) {
@@ -117,35 +115,108 @@ export const useRepoStore = defineStore({
 			const path = 'website/data.json'
 			return this.apiGetRepoFileData({ path }, isInit)
 		},
-		apiUpdateConfigData() {},
-		apiUpdateWebsiteData(data?: any) {
-			return this.apiUpdateRepoFileData({
-				path: 'website/data.json',
-				data
-			})
+		apiUpdateConfigData(data?: any) {
+			const path = 'config.ibookmark.json'
+			return this.apiUpdateRepoFileData({ path, data })
 		},
-		async apiGetRepoFileData({ path }: RepoFileData, isInit: boolean) {
-			if (process.server) return
-			if (isInit && (!this.isHasRepo || !this.owner || this.dataJSON[path])) return path
+		apiUpdateWebsiteData(data?: any) {
+			const path = 'website/data.json'
+			return this.apiUpdateRepoFileData({ path, data })
+		},
+		// 获取仓库信息
+		async apiGetRepoInfo() {
 			try {
-				const params = {
+				const path = 'repo'
+				const { statusCode, statusMessage, data }: any = await useApiGetBookmarkRepo({
 					owner: this.owner,
-					repo: this.repo,
-					path: path
+					repo: this.repo
+				})
+				if (statusCode) {
+					if (statusCode === 404) return this.setNotFoundPath(path)
+					else throw new Error(statusMessage)
 				}
-				const { statusCode, code, message, data }: any = await useApiGetBookmarkContents(params)
-				if (code !== 200 && statusCode !== 404) throw new Error(message)
-				if (statusCode === 404) return this.setNotFoundPath(path)
-				const content = JSON.parse(Base64.dec(data.content))
-				this.setSha(data.path, data.sha)
-				this.setPathDataToState(path, content)
+				this.setRepoInfo(data)
 				this.setNotFoundPath(path, false)
 				return path
 			} catch (error: any) {
 				return Promise.reject(error)
 			}
 		},
-		async apiUpdateRepoFileData({ path, data }: RepoFileData) {
+		// 获取文件内容
+		async apiGetRepoFileData({ path }: RepoFileData, isInit: boolean = false) {
+			if (process.server) return
+			if (isInit && (!this.isHasRepo || !this.owner || !isEmpty(this.dataJSON[path]))) return path
+			try {
+				const isJSON = /\.json$/i.test(path)
+				const params = {
+					owner: this.owner,
+					repo: this.repo,
+					path: path
+				}
+				const { statusCode, statusMessage, data }: any = await useApiGetBookmarkContents(params)
+				if (statusCode) {
+					if (statusCode === 404) return this.setNotFoundPath(path)
+					else throw new Error(statusMessage)
+				}
+				const base64Content = Base64.dec(data.content) as string
+				const content = isJSON ? JSON.parse(base64Content) : base64Content
+				this.setSha(data.path, data.sha)
+				if (isJSON) {
+					this.setPathDataToState(path, content)
+					this.setNotFoundPath(path, false)
+				}
+				return path
+			} catch (error: any) {
+				console.log(path, error)
+				return Promise.reject(error)
+			}
+		},
+		// 更新文件内容
+		async apiUpdateRepoFileData({ path, data: content }: RepoFileData) {
+			if (process.server) return
+			try {
+				const isJSON = /\.json$/i.test(path)
+				const params = {
+					owner: this.owner,
+					repo: this.repo,
+					path,
+					sha: this.repoShas[path],
+					content: Base64.enc(isJSON ? JSON.stringify(content) : content),
+					message: `iBookmark: update ${path} - ${dayjs().format('YYYY-MM-DD HH:mm:ss')}`
+				}
+				const { statusCode, statusMessage, data }: any = await useApiUpdateBookmarkFile(params)
+				if (statusCode) {
+					if (statusCode === 404) return this.apiCreateRepoFileData({ path, data: content })
+					else throw new Error(statusMessage)
+				}
+				this.setSha(data.content.path, data.content.sha)
+				// 获取更新内容
+				if (content) this.setPathDataToState(path, content)
+			} catch (error) {
+				return Promise.reject(error)
+			}
+		},
+		// 新建文件内容
+		async apiCreateRepoFileData({ path, data: content }: RepoFileData) {
+			if (process.server) return
+			try {
+				const isJSON = /\.json$/i.test(path)
+				const params = {
+					owner: this.owner,
+					repo: this.repo,
+					path,
+					content: Base64.enc(isJSON ? JSON.stringify(content) : content),
+					message: `iBookmark: create ${path} - ${dayjs().format('YYYY-MM-DD HH:mm:ss')}`
+				}
+				const { statusCode, statusMessage, data }: any = await useApiCreateBookmarkFile(params)
+				if (statusCode) throw new Error(statusMessage)
+				this.setSha(data.content.path, data.content.sha)
+			} catch (error) {
+				return Promise.reject(error)
+			}
+		},
+		// 删除文件
+		async apiDeleteRepoFileData({ path }: RepoFileData) {
 			if (process.server) return
 			try {
 				const params = {
@@ -153,19 +224,11 @@ export const useRepoStore = defineStore({
 					repo: this.repo,
 					path,
 					sha: this.repoShas[path],
-					content: Base64.enc(JSON.stringify(data ?? this.dataJSON[path])),
-					message: `iBookmark: update ${path} - ${this.dayjs().format('YYYY-MM-DD HH:mm:ss')}`
+					message: `iBookmark: delete ${path} - ${dayjs().format('YYYY-MM-DD HH:mm:ss')}`
 				}
-				const {
-					statusCode,
-					code,
-					message,
-					data: { content }
-				}: any = await useApiUpdateBookmarkFile(params)
-				if (code !== 200 && statusCode !== 404) throw new Error(message)
-				await this.setSha(content.path, content.sha)
-				// 获取更新内容
-				if (data) this.setPathDataToState(path, data)
+				const { statusCode, statusMessage }: any = await useApiDeleteBookmarkFile(params)
+				if (statusCode) throw new Error(statusMessage)
+				this.setSha(path)
 			} catch (error) {
 				return Promise.reject(error)
 			}

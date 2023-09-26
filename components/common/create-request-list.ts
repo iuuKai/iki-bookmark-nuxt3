@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-09-06 13:32:20
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-16 14:36:55
+ * @LastEditTime: 2023-09-20 11:16:45
  * @FilePath: \iki-bookmark-nuxt3\components\common\createRequestList.ts
  * @Description:
  * @QQ/微信: 790331286
@@ -15,8 +15,8 @@ export interface RequestObject {
 	label: string
 	required?: boolean
 	request: typeof useApiCreateBookmarkRepo | typeof useApiCreateBookmarkFile
-	params: object
-	result: object[]
+	params: any
+	result: any[]
 }
 
 export interface Result {
@@ -25,7 +25,6 @@ export interface Result {
 	state: number
 	required?: boolean
 }
-
 const userStore = useUserStore()
 const repoStore = useRepoStore()
 const templateModels = import.meta.glob('@/assets/init-create-template/*.ts', {
@@ -34,20 +33,30 @@ const templateModels = import.meta.glob('@/assets/init-create-template/*.ts', {
 })
 const initRepoFile = repoStore.initRepoFile
 
+const filterReadme = async (params: { path: string; data: any }) => {
+	try {
+		const p = 'README.en.md'
+		await repoStore.apiGetRepoFileData({ path: params.path })
+		await repoStore.apiUpdateRepoFileData(params)
+		if (userStore.type === 'gitee') {
+			await repoStore.apiGetRepoFileData({ path: p })
+			await repoStore.apiDeleteRepoFileData({ path: p })
+		}
+		return Promise.resolve()
+	} catch (error) {
+		return Promise.reject(error)
+	}
+}
+
 const repoFilesParams = initRepoFile.map(path => {
 	const k = Object.keys(templateModels).find(
 		k =>
 			/\/([^\/]*)\.ts$/.exec(k)?.[1]?.replace('_', '/')?.toLocaleLowerCase() ===
 			path.toLocaleLowerCase()
 	)
-
 	return {
 		path,
-		content: Base64.enc(templateModels[k as string]),
-		// content: templateModels[k as string],	// 无 base64 会创建失败
-		owner: userStore.loginName,
-		repo: 'my-bookmarks',
-		message: 'iBookmark: init private repo'
+		data: templateModels[k as string]
 	}
 })
 
@@ -60,14 +69,15 @@ export const getResponseList = (): RequestObject[] => [
 		params: {
 			name: 'my-bookmarks',
 			description: '我的私人书签',
-			private: true
+			private: true,
+			auto_init: true
 		},
 		result: []
 	},
 	...repoFilesParams.map(item => ({
 		value: item.path,
 		label: item.path,
-		request: useApiCreateBookmarkFile,
+		request: repoStore.apiCreateRepoFileData,
 		params: item,
 		result: []
 	}))
@@ -94,13 +104,14 @@ export const requestQueue = async (
 		({ label }: { label: string }) => label === curRequest.label
 	) as Result
 	try {
-		const { code, statusCode, statusMessage, message, data }: any = await curRequest.request(
-			curRequest.params
-		)
-		if (code !== 200) throw new Error(message || statusMessage || statusCode)
-		// 创建配置文件后，获取
-		if (/^config/.test(curRequest.label)) {
-			await repoStore.apiGetConfigData()
+		if (/readme/i.test(curRequest.value)) {
+			await filterReadme(curRequest.params)
+		} else {
+			await curRequest.request(curRequest.params)
+			// 创建配置文件后，获取
+			if (/^config/.test(curRequest.label)) {
+				await repoStore.apiGetConfigData()
+			}
 		}
 		curResult.state = 1
 	} catch (error) {

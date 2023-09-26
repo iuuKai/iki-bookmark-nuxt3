@@ -81,10 +81,10 @@ const handleConfirm = async (formEl: FormInstance | undefined) => {
 }
 
 const clearForm = () => {
-	form.value = {}
 	if (formRef.value) {
 		formRef.value.resetFields()
 	}
+	form.value = {}
 }
 
 defineExpose({

@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-15 01:10:40
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-17 23:08:45
+ * @LastEditTime: 2023-09-26 12:22:06
  * @FilePath: \iki-bookmark-nuxt3\nuxt.config.ts
  * @Description:
  * @QQ/微信: 790331286
@@ -50,11 +50,11 @@ export default defineNuxtConfig({
 	// experimental: {
 	// 	externalVue: true	// 勿 false，否则打包出错
 	// },
-	runtimeConfig: {
-		public: {
-			baseURL: 'https://ibookmark.onrender.com/'
-		}
+	devServer: {
+		host: '127.0.0.1',
+		port: 3000
 	},
+	runtimeConfig: {},
 	alias: {},
 	build: {
 		transpile: [/echarts/]
@@ -71,8 +71,8 @@ export default defineNuxtConfig({
 			},
 			meta: [
 				{ charset: 'utf-8' },
-				{ name: 'viewport', content: 'width=device-width, initial-scale=1' }
-				// { hid: 'description', name: 'description', content: 'Nuxt.js project' }
+				{ name: 'viewport', content: 'width=device-width, initial-scale=1' },
+				{ hid: 'description', name: 'description', content: 'iBookmark - 在线书签' }
 			],
 			script: []
 		},

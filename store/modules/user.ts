@@ -2,16 +2,17 @@
  * @Author: iuukai
  * @Date: 2023-08-26 09:32:42
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-16 02:23:50
+ * @LastEditTime: 2023-09-26 19:53:29
  * @FilePath: \iki-bookmark-nuxt3\store\modules\user.ts
  * @Description:
  * @QQ/微信: 790331286
  */
 import { defineStore } from 'pinia'
 import { useStorage } from '@vueuse/core'
+import { useRepoStore } from './repo'
+import { useCommentStore } from './comment'
 
 interface UserState {
-	isLoginDialogShow: boolean
 	type: string
 	token: string
 	oauthType: string | undefined
@@ -29,7 +30,6 @@ export const useUserStore = defineStore({
 	id: 'user',
 	state: (): UserState => {
 		return {
-			isLoginDialogShow: false,
 			type: '',
 			oauthType: '',
 			token: '',
@@ -52,10 +52,6 @@ export const useUserStore = defineStore({
 			this.token = token.value
 			this.type = type.value || 'github'
 			this.oauthType = oauthType.value
-			// this.userInfo = userInfo.value
-		},
-		setLoginDialogShow(_show: boolean) {
-			this.isLoginDialogShow = _show
 		},
 		setToken(_token: string) {
 			this.token = _token
@@ -73,13 +69,13 @@ export const useUserStore = defineStore({
 			this.userInfo = _userInfo
 			// 有数据则清空 oauth_type
 			this.setOauthType(undefined)
-			// userInfo.value = _userInfo
 		},
-		async apiGetUserInfo() {
+		async apiGetUserInfo({ type, token }: { type?: string; token?: string }) {
+			if (process.server) return
 			try {
-				const params = { type: this.type, token: this.token }
-				const { code, msg, data }: any = await useApiGetUserInfo(params)
-				if (code !== 200) throw new Error(msg)
+				const params = { type: type || this.type, token: token || this.token }
+				const { statusCode, statusMessage, data }: any = await useApiGetUserInfo(params)
+				if (statusCode) throw new Error(statusMessage)
 				this.setUserInfo(data)
 			} catch (error) {
 				return Promise.reject(error)
@@ -88,6 +84,8 @@ export const useUserStore = defineStore({
 		logout() {
 			this.setToken('')
 			this.setUserInfo({})
+			useRepoStore().clear()
+			useCommentStore().clear()
 		}
 	}
 })

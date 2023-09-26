@@ -2,8 +2,8 @@
  * @Author: iuukai
  * @Date: 2023-08-27 00:24:23
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-13 13:09:36
- * @FilePath: \iki-bookmark-nuxt3\components\common\loginDialog.vue
+ * @LastEditTime: 2023-09-26 22:16:09
+ * @FilePath: \iki-bookmark-nuxt3\components\common\login-dialog.vue
  * @Description: 
  * @QQ/微信: 790331286
 -->
@@ -53,6 +53,7 @@
 import { useStorage } from '@vueuse/core'
 import { useUserStore } from '@/store/modules/user'
 import { useRepoStore } from '@/store/modules/repo'
+import { useGlobalStore } from '@/store/modules/global'
 
 const OAUTH_KEY = 'oauth_data'
 const oauth = useStorage(OAUTH_KEY, null, undefined, {
@@ -63,6 +64,7 @@ const oauth = useStorage(OAUTH_KEY, null, undefined, {
 })
 const userStore = useUserStore()
 const repoStore = useRepoStore()
+const globalStore = useGlobalStore()
 
 const selectType = ref('github')
 const inputToken = ref('')
@@ -70,8 +72,8 @@ const isLoading = ref(false)
 const oauthWindow = ref()
 
 const dialogVisible = computed({
-	get: () => userStore.isLoginDialogShow,
-	set: (val: boolean) => userStore.setLoginDialogShow(val)
+	get: () => globalStore.isLoginDialogShow,
+	set: (val: boolean) => globalStore.setLoginDialogShow(val)
 })
 const token = computed({
 	get: () => userStore.token,
@@ -98,27 +100,19 @@ const checkBusyness = () => {
 const login = async (params: { type: string; token: string }) => {
 	try {
 		isLoading.value = true
-		const { code, message, data }: any = await useApiGetUserInfo(params)
-		if (code !== 200) throw new Error(message)
-		await userStore.setUserInfo(data)
-		await getRepo()
+
+		// 获取用户信息
+		await userStore.apiGetUserInfo(params)
+		// 获取仓库信息
+		await repoStore.apiGetRepoInfo()
+		// 获取配置信息
+		await repoStore.apiGetConfigData()
 
 		dialogVisible.value = false
 	} catch (error) {
 		return Promise.reject(error)
 	} finally {
 		isLoading.value = false
-	}
-}
-
-const getRepo = async () => {
-	try {
-		// 获取仓库信息
-		await repoStore.apiGetRepoInfo()
-		// 获取配置信息
-		await repoStore.apiGetConfigData()
-	} catch (error) {
-		return Promise.reject(error)
 	}
 }
 
@@ -169,14 +163,14 @@ const clearCache = () => {
 watch(oauth, async (v: any) => {
 	if (!v) return
 	try {
-		const { code, message, data, type } = v
-		if (code === 200) {
+		const { meta, data, statusCode, type } = v
+		console.log(v)
+		if (!statusCode && meta.code === 200) {
 			token.value = data.access_token
 			userStore.setType(type)
 			await login({ type, token: data.access_token })
 			ElMessage.success('登录成功')
 		} else {
-			console.error(message)
 			ElMessage.error('授权失败')
 		}
 	} finally {

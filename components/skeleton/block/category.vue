@@ -2,8 +2,8 @@
  * @Author: iuukai
  * @Date: 2023-09-16 20:42:09
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-16 23:08:54
- * @FilePath: \iki-bookmark-nuxt3\components\skeleton\category-card.vue
+ * @LastEditTime: 2023-09-26 17:38:42
+ * @FilePath: \iki-bookmark-nuxt3\components\skeleton\block\category-card.vue
  * @Description: 
  * @QQ/微信: 790331286
 -->
@@ -19,9 +19,9 @@
 						<div class="bm-divider_vertical"></div>
 					</div>
 					<div class="bm-category_content flex-1">
-						<div class="flex" v-for="n in subCount" :key="n">
-							<el-skeleton-item variant="circle" class="!w-8 !h-8 mr-1 flex-none" />
-							<el-skeleton-item variant="rect" class="!h-full" />
+						<div class="flex space-x-2" v-for="n in subCount" :key="n">
+							<el-skeleton-item class="!w-8 !h-8 flex-none" variant="circle" />
+							<el-skeleton-item class="!h-full" variant="h3" />
 						</div>
 					</div>
 				</div>

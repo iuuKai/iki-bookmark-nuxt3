@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-09-10 23:20:46
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-15 05:22:13
+ * @LastEditTime: 2023-09-26 19:26:32
  * @FilePath: \iki-bookmark-nuxt3\components\basic\website-simple-card.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -31,7 +31,13 @@
 			>
 				<div class="bm-website_content">
 					<el-checkbox v-show="isMultiple" class="!mr-1 !h-full" :model-value="isSelected" />
-					<BasicImage class="mr-2 w-5 h-5" :src="icon" fit="contain" lazy />
+					<BasicImage
+						class="mr-2 w-6 h-6"
+						loadingIconSize="0.8rem"
+						:src="icon"
+						fit="contain"
+						lazy
+					/>
 					<el-text class="flex-1" truncated>{{ title }}</el-text>
 					<el-dropdown
 						:class="['bm-website_bar', { 'is-active': dropdownVisible }]"
@@ -124,35 +130,34 @@ const vBanlink = {
 
 <style scoped lang="less">
 .bm-website-simple {
-  @apply rounded-md duration-300;
+	@apply rounded-md duration-300;
 
-  &.is-active {
-    @apply bg-gray-500/20;
-  }
+	&.is-active {
+		@apply bg-gray-500/20;
+	}
 
-  &.is-selected {
-    @apply outline outline-offset-2 outline-blue-500 duration-100;
-  }
+	&.is-selected {
+		@apply outline outline-offset-2 outline-blue-500 duration-100;
+	}
 
-  &:hover {
-    @apply bg-gray-500/20;
+	&:hover {
+		@apply bg-gray-500/20;
 
-    .bm-website_bar {
-      @apply opacity-100;
-    }
-  }
+		.bm-website_bar {
+			@apply opacity-100;
+		}
+	}
 
-  .bm-website_bar {
-    @apply self-end opacity-0 duration-300;
+	.bm-website_bar {
+		@apply self-end opacity-0 duration-300;
 
-    &.is-active {
-      @apply opacity-100;
-    }
-  }
+		&.is-active {
+			@apply opacity-100;
+		}
+	}
 
-  .bm-website_content {
-    @apply p-2 flex justify-between items-center leading-none;
-  }
+	.bm-website_content {
+		@apply p-2 flex justify-between items-center leading-none;
+	}
 }
-
 </style>
