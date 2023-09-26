@@ -7,7 +7,10 @@
  * @Description:
  * @QQ/微信: 790331286
  */
+import { version } from './package.json'
+
 export default defineAppConfig({
+	version,
 	baseURL: 'https://ibookmark.onrender.com/',
 	proxyURL: 'https://cors-anywhere.azm.workers.dev/',
 	author: {
