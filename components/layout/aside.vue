@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-19 13:47:59
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-27 00:14:10
+ * @LastEditTime: 2023-09-27 10:02:06
  * @FilePath: \iki-bookmark-nuxt3\components\layout\aside.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -19,7 +19,7 @@
 				:class="['bm-aside_item_wrap', { 'is-active': menu.path === route.path }]"
 				@click="handle(menu.path)"
 			>
-				<div class="bm-aside_item" v-permissions="menu.permissions">
+				<div v-for="n in 2" :key="n" class="bm-aside_item" v-permissions="menu.permissions">
 					<el-space>
 						<ClientOnly fallback-tag="span">
 							<Icon :name="menu.icon" size="20px" />
@@ -27,7 +27,6 @@
 						<span>{{ menu.name }}</span>
 					</el-space>
 				</div>
-				<!-- <div class="bm-nav_propel"></div> -->
 			</div>
 		</div>
 	</div>
@@ -42,9 +41,22 @@ const router = useRouter()
 const menuStore = useMenuStore()
 const menus = menuStore.getMenus
 
-const handle = (path: string) => {
-	router.push(path)
-}
+const activeItem = ref()
+const navItemWidth = ref('0')
+const navItemHeight = ref('0')
+const startClipRect = computed(() => `rect(0, 0, auto, 0)`)
+const endClipRect = computed(() => `rect(0, ${navItemWidth.value}, auto, 0)`)
+
+// const { top } = useElementBounding(activeItem)
+// const lineTop = computed(() => `${top.value}px`)
+
+onMounted(() => {
+	const curWrapper = unrefElement(useCurrentElement())
+	const navItem = curWrapper.querySelector('.is-active .bm-aside_item')
+	activeItem.value = navItem
+	navItemWidth.value = navItem.clientWidth + 'px'
+	navItemHeight.value = navItem.clientHeight + 'px'
+})
 
 watch(
 	() => route.path,
@@ -54,6 +66,10 @@ watch(
 	},
 	{ immediate: true }
 )
+
+const handle = (path: string) => {
+	router.push(path)
+}
 </script>
 
 <style scoped lang="less">
@@ -65,26 +81,38 @@ watch(
 	}
 
 	.bm-aside_nav {
-		@apply flex flex-col space-y-4 select-none overflow-x-auto;
+		@apply relative flex flex-col space-y-4 select-none overflow-x-auto;
+
+		&::before {
+			// top: v-bind('lineTop');
+			height: v-bind('navItemHeight');
+			@apply absolute left-0 w-1 content-[''] bg-indigo-500;
+		}
 
 		.bm-aside_item_wrap {
 			@apply relative border-l-4 border-transparent;
 
 			&.is-active {
 				@apply border-indigo-500;
-
-				.bm-aside_item {
-					@apply text-white from-indigo-500;
-				}
 			}
 
-			.bm-nav_propel {
-				// @apply absolute top-0 right-0 w-0.5 h-full bg-gray-200;
+			&.is-active,
+			&:hover {
+				.bm-aside_item {
+					&:first-child {
+						clip: v-bind('endClipRect');
+					}
+				}
 			}
 
 			.bm-aside_item {
 				@apply ml-2 pl-2 h-9 flex justify-start items-center bg-gradient-to-r cursor-pointer;
-				@apply rounded-md rounded-tr-none rounded-br-none duration-300;
+				@apply rounded-md rounded-tr-none rounded-br-none ease-out duration-1000;
+				@apply first:absolute first:top-0 first:left-0 first:right-0 first:text-white first:from-indigo-500 first:z-10;
+
+				&:first-child {
+					clip: v-bind('startClipRect');
+				}
 			}
 		}
 	}

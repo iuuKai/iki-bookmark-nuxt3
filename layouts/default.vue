@@ -11,7 +11,7 @@
 	<el-container class="bm-layout">
 		<CommonBgFull />
 		<el-main class="bm-layout-content">
-			<CommonContainer flex fullHeight overHide customClass="p-10">
+			<CommonContainer flex fullHeight overHide customClass="p-4">
 				<div class="bm-content-wrapper">
 					<el-aside width="220px">
 						<LayoutAside @menu-click="curMenuTitle = $event" />
