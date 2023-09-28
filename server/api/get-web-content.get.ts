@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-09-21 07:23:30
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-25 00:45:58
+ * @LastEditTime: 2023-09-28 22:58:43
  * @FilePath: \iki-bookmark-nuxt3\server\api\get-web-content.get.ts
  * @Description:
  * @QQ/微信: 790331286
@@ -31,10 +31,12 @@ export default defineEventHandler(async (event: H3Event) => {
 
 					let icon: string = ''
 					try {
-						if (icon_url) throw ''
-						await $fetch(url + '/favicon.ico')
-						icon = url + '/favicon.ico'
-					} catch (error) {
+						if (icon_url) throw null
+						const origin = new URL(url).origin.replace(/\/$/, '')
+						const iconURL = origin + '/favicon.ico'
+						await $fetch(iconURL)
+						icon = iconURL
+					} catch {
 						icon = icon_url ?? ''
 					}
 
