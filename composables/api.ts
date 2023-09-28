@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-31 22:39:55
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-25 05:12:28
+ * @LastEditTime: 2023-09-28 12:49:19
  * @FilePath: \iki-bookmark-nuxt3\composables\api.ts
  * @Description:
  * @QQ/微信: 790331286
@@ -15,6 +15,10 @@ interface ClientResponse {
 }
 
 // https://cors-anywhere.azm.workers.dev/
+export const useApiProxy = (url: string) => {
+	const proxyUrl = '/api/proxy/' + url
+	return useClientRequest({ url: proxyUrl })
+}
 
 // 获取网站信息
 export const useApiGetWebContent = (params?: any) => {

@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-14 01:45:15
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-26 22:18:28
+ * @LastEditTime: 2023-09-28 06:02:52
  * @FilePath: \iki-bookmark-nuxt3\components\layout\header.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -57,7 +57,7 @@
 				</el-space>
 			</div>
 		</div>
-		<div class="text-xl font-bold">
+		<!-- <div class="text-xl font-bold">
 			<ClientOnly>
 				<transition name="el-zoom-in-left" mode="out-in" appear>
 					<span :key="route.path">{{ menuTitle }}</span>
@@ -66,7 +66,7 @@
 					<span>Loading Title...</span>
 				</template>
 			</ClientOnly>
-		</div>
+		</div> -->
 	</div>
 </template>
 

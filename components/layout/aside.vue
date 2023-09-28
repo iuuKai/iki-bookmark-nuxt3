@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-19 13:47:59
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-27 10:02:06
+ * @LastEditTime: 2023-09-28 08:19:27
  * @FilePath: \iki-bookmark-nuxt3\components\layout\aside.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -14,10 +14,13 @@
 		</div>
 		<div class="bm-aside_nav">
 			<div
-				v-for="menu in menus"
+				v-for="(menu, i) in menus"
 				:key="menu.path"
+				ref="items"
 				:class="['bm-aside_item_wrap', { 'is-active': menu.path === route.path }]"
-				@click="handle(menu.path)"
+				@click="handleClick(items[i], menu.path)"
+				@mouseenter="handleMouseHover($event, true)"
+				@mouseleave="handleMouseHover($event, false)"
 			>
 				<div v-for="n in 2" :key="n" class="bm-aside_item" v-permissions="menu.permissions">
 					<el-space>
@@ -41,19 +44,24 @@ const router = useRouter()
 const menuStore = useMenuStore()
 const menus = menuStore.getMenus
 
-const activeItem = ref()
+const items = ref()
 const navItemWidth = ref('0')
 const navItemHeight = ref('0')
 const startClipRect = computed(() => `rect(0, 0, auto, 0)`)
 const endClipRect = computed(() => `rect(0, ${navItemWidth.value}, auto, 0)`)
 
-// const { top } = useElementBounding(activeItem)
-// const lineTop = computed(() => `${top.value}px`)
+// 点击状态时，line 停留位置
+const activeItemTop = ref(0)
+// 动态 line 改变值
+const hoverItemTop = ref(0)
+const lineTop = computed(() => `${hoverItemTop.value}px`)
 
 onMounted(() => {
 	const curWrapper = unrefElement(useCurrentElement())
 	const navItem = curWrapper.querySelector('.is-active .bm-aside_item')
-	activeItem.value = navItem
+	if (!navItem) return
+	activeItemTop.value = navItem.parentElement.offsetTop
+	hoverItemTop.value = navItem.parentElement.offsetTop
 	navItemWidth.value = navItem.clientWidth + 'px'
 	navItemHeight.value = navItem.clientHeight + 'px'
 })
@@ -67,14 +75,25 @@ watch(
 	{ immediate: true }
 )
 
-const handle = (path: string) => {
+const handleMouseHover = (e: Event, isEnter: boolean) => {
+	const $el: HTMLElement | null = e.target as HTMLElement
+	if (e.target && isEnter) {
+		hoverItemTop.value = $el.offsetTop
+	} else {
+		hoverItemTop.value = activeItemTop.value
+	}
+}
+
+const handleClick = ($el: HTMLDivElement, path: string) => {
+	activeItemTop.value = $el.offsetTop
+	hoverItemTop.value = $el.offsetTop
 	router.push(path)
 }
 </script>
 
 <style scoped lang="less">
 .bm-aside {
-	@apply p-6 h-full flex flex-col;
+	@apply relative p-6 h-full flex flex-col;
 
 	.logo {
 		@apply px-4 pt-0 pb-6;
@@ -82,18 +101,18 @@ const handle = (path: string) => {
 
 	.bm-aside_nav {
 		@apply relative flex flex-col space-y-4 select-none overflow-x-auto;
+		@apply before:absolute before:left-0 before:w-1 before:content-[''] before:bg-indigo-500 before:duration-300;
 
 		&::before {
-			// top: v-bind('lineTop');
+			top: v-bind('lineTop');
 			height: v-bind('navItemHeight');
-			@apply absolute left-0 w-1 content-[''] bg-indigo-500;
 		}
 
 		.bm-aside_item_wrap {
 			@apply relative border-l-4 border-transparent;
 
 			&.is-active {
-				@apply border-indigo-500;
+				// @apply border-indigo-500;
 			}
 
 			&.is-active,

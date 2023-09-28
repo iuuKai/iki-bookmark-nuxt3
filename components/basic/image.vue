@@ -2,16 +2,16 @@
  * @Author: iuukai
  * @Date: 2023-08-22 23:27:28
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-26 19:38:30
+ * @LastEditTime: 2023-09-28 13:27:10
  * @FilePath: \iki-bookmark-nuxt3\components\basic\image.vue
  * @Description: 
  * @QQ/微信: 790331286
 -->
 <template>
 	<div class="bm-image" v-lazy="lazy">
-		<BasicLoading v-if="isPending" :size="loadingIconSize" :circle="circle" />
+		<BasicLoading v-if="!state" :size="loadingIconSize" :circle="circle" />
 		<template v-else>
-			<Icon v-if="isFailed" :name="errorIcon" :size="errorIconSize" />
+			<Icon v-if="state < 0" :name="errorIcon" :size="errorIconSize" />
 			<img v-else :class="['w-full', 'h-full', fitClass]" :src="url" />
 		</template>
 	</div>
@@ -19,7 +19,7 @@
 
 <script setup lang="ts">
 import type { DirectiveBinding } from 'vue'
-import { useGlobalStore } from '@/store/modules/global'
+import Worker from '@/assets/workers/index.ts?worker'
 
 type Fit = '' | 'fill' | 'contain' | 'cover' | 'none' | 'scale-down'
 
@@ -59,56 +59,29 @@ const props = defineProps({
 	}
 })
 
-const globalStore = useGlobalStore()
-
-let errCount = 0
-let img: HTMLImageElement | null
-let isProxy = false
-const proxyURL = computed(() => globalStore.PROXY_URL ?? '')
-
-const fitClass = computed(() => (props.fit ? `object-${props.fit}` : ''))
-const state = reactive({
-	isPending: true,
-	isFailed: false,
-	url: ''
-})
-const { isPending, isFailed, url } = toRefs(state)
-
 const propsSrc = props.src.replace(/^\/\//, 'https://')
+const fitClass = computed(() => (props.fit ? `object-${props.fit}` : ''))
+
+const url = ref('')
+const state = ref(0)
 
 const loadImage = () => {
-	if (!state.isPending || state.url || process.server) return
-	img = new Image()
-	if (propsSrc) img.src = `/api/proxy/${propsSrc}`
-	else done(true)
+	if (!propsSrc) return (state.value = -1)
 
-	img.addEventListener('load', handleImageResult, false)
-	img.addEventListener('error', handleImageResult, false)
-}
-
-const handleImageResult = (e: Event) => {
-	const el = e.target as HTMLImageElement
-	if (e.type === 'load') {
-		state.url = el.src
-		done(false)
-	} else if (e.type === 'error') {
-		errCount++
-		if ((!isProxy && propsSrc) || (errCount <= 2 && propsSrc)) {
-			if (errCount < 2) {
-				el.src = proxyURL.value + propsSrc
-			} else {
-				el.src = propsSrc
-			}
-			isProxy = !isProxy
+	const worker = new Worker()
+	worker.postMessage({
+		id: 'img',
+		url: propsSrc
+	})
+	worker.addEventListener('message', (e: MessageEvent) => {
+		const { code, msg, url: src } = e.data
+		if (code === 200) {
+			url.value = src
+			state.value = 1
 		} else {
-			done(true)
+			state.value = -1
 		}
-	}
-}
-
-const done = (isError: boolean = false) => {
-	state.isPending = false
-	state.isFailed = isError
+	})
 }
 
 // 指令
@@ -120,13 +93,6 @@ const vLazy = {
 			if (isIntersecting && binding.value) loadImage()
 			emits('image-visibility-change', isIntersecting)
 		})
-	},
-	beforeUnmount() {
-		if (img) {
-			img.removeEventListener('load', handleImageResult, false)
-			img.removeEventListener('error', handleImageResult, false)
-			img = null
-		}
 	}
 }
 </script>
