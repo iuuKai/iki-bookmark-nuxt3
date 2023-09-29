@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-09-11 09:58:49
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-29 13:33:08
+ * @LastEditTime: 2023-09-30 00:28:39
  * @FilePath: \iki-bookmark-nuxt3\components\common\dialog\update-website.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -255,8 +255,8 @@ const handleRemoteIcon = (popoverEl: PopoverInstance) => {
 
 const hanldeSaveRemoteIcon = async (url: string) => {
 	try {
-		await checkImageUrlValid(url)
-		form.value.icon = url
+		const iconURL = await checkImageUrlValid(url)
+		form.value.icon = iconURL
 		isInValid.value = false
 		innerVisible.value = false
 	} catch (error) {
@@ -270,7 +270,10 @@ const checkImageUrlValid = (url: string) => {
 	return new Promise((resolve, reject) => {
 		const img = new Image()
 		img.src = url
-		img.addEventListener('load', resolve)
+		img.addEventListener('load', () => {
+			isProxy = false
+			resolve(img.src)
+		})
 		img.addEventListener('error', () => {
 			if (isProxy) return reject()
 			isProxy = true
@@ -284,6 +287,7 @@ const clearForm = () => {
 		formRef.value.resetFields()
 	}
 	form.value = {}
+	remoteIcon.value = ''
 	activeName.value = '1'
 	isGetWebContentLoading.value = false
 }
