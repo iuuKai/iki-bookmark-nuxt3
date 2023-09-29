@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-14 06:20:11
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-29 11:15:20
+ * @LastEditTime: 2023-09-30 00:57:14
  * @FilePath: \iki-bookmark-nuxt3\pages\bookmarks.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -353,6 +353,8 @@ const configLogData = ({
 	const log = { ...cloneConfig.log }
 	const p = path.value
 	const curDate = dayjs().format('YYYY-MM-DD')
+	console.log('%c [ curDate ]-356', 'font-size:13px; background:pink; color:#bf2c9f;', curDate)
+	console.log('%c [ log[p] ]-358', 'font-size:13px; background:pink; color:#bf2c9f;', log[p])
 	if (log && log[p] && curDate in log[p]) {
 		log[p][curDate] = {
 			total,
