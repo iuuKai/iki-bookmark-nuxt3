@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-22 23:27:28
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-29 14:09:47
+ * @LastEditTime: 2023-09-29 15:06:16
  * @FilePath: \iki-bookmark-nuxt3\components\basic\image.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -60,6 +60,7 @@ const props = defineProps({
 })
 
 const propsSrc = computed(() => props.src.replace(/^\/\//, 'https://'))
+// const fitClass = computed(() => (props.fit ? `object-${props.fit}` : ''))
 const fitClass = computed(() => (props.fit ? `object-${props.fit}` : ''))
 
 const url = ref('')
