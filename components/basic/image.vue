@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-22 23:27:28
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-29 15:06:16
+ * @LastEditTime: 2023-09-29 15:38:49
  * @FilePath: \iki-bookmark-nuxt3\components\basic\image.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -11,8 +11,8 @@
 	<div class="bm-image" v-lazy="lazy">
 		<BasicLoading v-if="!state" :size="loadingIconSize" :circle="circle" />
 		<template v-else>
-			<Icon v-if="state < 0" :name="errorIcon" :size="errorIconSize" />
-			<img v-else :class="['w-full', 'h-full', fitClass]" :src="url" />
+			<img v-if="state > 0" :class="['w-full', 'h-full', fit ? `object-${fit}` : '']" :src="url" />
+			<Icon v-else :name="errorIcon" :size="errorIconSize" />
 		</template>
 	</div>
 </template>
@@ -60,8 +60,6 @@ const props = defineProps({
 })
 
 const propsSrc = computed(() => props.src.replace(/^\/\//, 'https://'))
-// const fitClass = computed(() => (props.fit ? `object-${props.fit}` : ''))
-const fitClass = computed(() => (props.fit ? `object-${props.fit}` : ''))
 
 const url = ref('')
 const state = ref(0)
