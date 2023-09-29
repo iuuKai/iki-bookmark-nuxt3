@@ -170,7 +170,7 @@ const handleSubmit = async (type: string) => {
 				res += cur.list.length
 				return res
 			}, 0)
-			const cloneConfig = configLogData({ total, add: 1 })
+			const cloneConfig = configLogData({ path: path.value, total, add: 1 })
 			await repoStore.apiUpdateConfigData(cloneConfig)
 		}
 		ElMessage.success(`${dialogTitle.value}成功!`)
@@ -260,7 +260,7 @@ const deleteCategory = (id: string, name: string) => {
 				return res
 			}, 0)
 			const del = data.value.find((item: any) => item.id === id).list.length
-			const cloneConfig = configLogData({ total, del })
+			const cloneConfig = configLogData({ path: path.value, total, del })
 			await repoStore.apiUpdateConfigData(cloneConfig)
 			ElMessage.success('删除成功')
 		} catch (error) {
@@ -329,7 +329,7 @@ const deleteWebsite = async (id?: string, pid?: string) => {
 			return res
 		}, 0)
 		const del = selectList.value.length || 1
-		const cloneConfig = configLogData({ total, del })
+		const cloneConfig = configLogData({ path: path.value, total, del })
 		await repoStore.apiUpdateConfigData(cloneConfig)
 
 		ElMessage.success('删除成功!')

@@ -117,9 +117,9 @@ const handleClick = async (websiteInfo: any) => {
 				}, 0)
 				let cloneConfig: any
 				if (msg === '收藏') {
-					cloneConfig = configLogData({ total, add: 1 })
+					cloneConfig = configLogData({ path: path.value, total, add: 1 })
 				} else {
-					cloneConfig = configLogData({ total, del: 1 })
+					cloneConfig = configLogData({ path: path.value, total, del: 1 })
 				}
 				await repoStore.apiUpdateConfigData(cloneConfig)
 				ElMessage.success(`${msg}成功`)
