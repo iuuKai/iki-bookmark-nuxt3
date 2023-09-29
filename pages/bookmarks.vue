@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-14 06:20:11
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-24 00:16:20
+ * @LastEditTime: 2023-09-29 11:15:20
  * @FilePath: \iki-bookmark-nuxt3\pages\bookmarks.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -52,6 +52,7 @@
 				width="500px"
 				class="bm-bookmarks_dialog"
 				:close-on-click-modal="false"
+				append-to-body
 			>
 				<div>
 					<CommonDialogUpdateCategory

@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-09-01 23:33:27
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-26 12:59:52
+ * @LastEditTime: 2023-09-29 13:23:32
  * @FilePath: \iki-bookmark-nuxt3\store\modules\repo.ts
  * @Description:
  * @QQ/微信: 790331286
@@ -59,6 +59,9 @@ export const useRepoStore = defineStore({
 		CONFIG(): any {
 			const path = this.initRepoFile.find(p => /^config\./.test(p)) ?? ''
 			return { ...this.dataJSON[path] }
+		},
+		Data(): any {
+			return this.dataJSON
 		}
 	},
 	actions: {

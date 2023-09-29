@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-09-21 07:23:30
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-28 22:58:43
+ * @LastEditTime: 2023-09-29 09:18:39
  * @FilePath: \iki-bookmark-nuxt3\server\api\get-web-content.get.ts
  * @Description:
  * @QQ/微信: 790331286
@@ -34,11 +34,16 @@ export default defineEventHandler(async (event: H3Event) => {
 						if (icon_url) throw null
 						const origin = new URL(url).origin.replace(/\/$/, '')
 						const iconURL = origin + '/favicon.ico'
-						await $fetch(iconURL)
+						await $fetch(iconURL, { headers: { Accept: 'image/*' } })
 						icon = iconURL
 					} catch {
 						icon = icon_url ?? ''
 					}
+
+					/**
+					 * 如果 https://xxx.com/favicon.ico 不存在
+					 * 此时，需要前端使用 new Image()去处理图片地址是否有效
+					 */
 
 					res.data = {
 						url,

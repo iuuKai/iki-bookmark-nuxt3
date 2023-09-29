@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-09-11 09:58:49
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-25 00:46:13
+ * @LastEditTime: 2023-09-29 13:33:08
  * @FilePath: \iki-bookmark-nuxt3\components\common\dialog\update-website.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -32,12 +32,16 @@
 					<div class="w-full flex gap-3">
 						<el-popover
 							placement="bottom"
-							:width="200"
+							width="auto"
 							trigger="click"
+							ref="popoverRef"
 							@show="isPopoverShow = true"
 							@hide="isPopoverShow = false"
 						>
-							<div>123</div>
+							<div>
+								<el-button type="primary" :icon="UploadFilled">上传图标</el-button>
+								<el-button @click="handleRemoteIcon(popoverRef)">远程图标</el-button>
+							</div>
 							<template #reference>
 								<div :class="['bm-upload-icon', { 'is-active': isPopoverShow }]">
 									<img v-if="form.icon" :src="form.icon" alt="" />
@@ -95,6 +99,35 @@
 				</el-tab-pane>
 			</el-tabs>
 		</el-form>
+		<el-dialog
+			v-model="innerVisible"
+			width="460px"
+			top="20vh"
+			title="远程图标"
+			append-to-body
+			:close-on-click-modal="false"
+		>
+			<div>
+				<el-alert
+					v-show="isInValid"
+					class="!mb-4"
+					title="该图标链接无法识别，请输入正确的图标链接地址！"
+					type="error"
+					show-icon
+					:closable="false"
+				/>
+				<el-input
+					v-model="remoteIcon"
+					size="large"
+					clearable
+					placeholder="请输入远程图标链接地址"
+				/>
+			</div>
+			<div class="mt-4 flex justify-center">
+				<el-button @click="innerVisible = false">关闭</el-button>
+				<el-button type="primary" @click="hanldeSaveRemoteIcon(remoteIcon)">保存远程图标</el-button>
+			</div>
+		</el-dialog>
 		<div class="mt-4 text-right">
 			<el-button :disabled="isBusyness" @click="emits('cancel')">取消</el-button>
 			<el-button :loading="isBusyness" type="primary" @click="handleConfirm(formRef)">
@@ -105,7 +138,8 @@
 </template>
 
 <script setup lang="ts">
-import type { FormInstance, FormItemInstance } from 'element-plus'
+import { UploadFilled } from '@element-plus/icons-vue'
+import type { FormInstance, FormItemInstance, PopoverInstance } from 'element-plus'
 
 const emits = defineEmits(['update:formData', 'cancel', 'confirm'])
 const props = defineProps({
@@ -152,6 +186,7 @@ const rules = ref({
 	],
 	title: [{ required: true, message: '请输入网站名称', trigger: 'blur' }]
 })
+
 const defaultCategory = '默认'
 const activeName = ref('1')
 const isPopoverShow = ref(false)
@@ -170,6 +205,12 @@ const list = computed(() => {
 	if (isEmptyCategory) form.value.categoryId = defaultCategory
 	return arr
 })
+
+const popoverRef = ref()
+const remoteIcon = ref('')
+const isInValid = ref(false)
+const innerVisible = ref(false)
+watch(innerVisible, (v: boolean) => (isInValid.value = false))
 
 const validateWebsiteUrl = (formItemEl: FormItemInstance | undefined) => {
 	if (!formItemEl) return
@@ -203,6 +244,33 @@ const handleConfirm = async (formEl: FormInstance | undefined) => {
 	await formEl.validate((valid, fields) => {
 		if (!valid) return false
 		emits('confirm')
+	})
+}
+
+const handleRemoteIcon = (popoverEl: PopoverInstance) => {
+	if (!popoverEl) return
+	innerVisible.value = true
+	popoverEl.hide()
+}
+
+const hanldeSaveRemoteIcon = async (url: string) => {
+	try {
+		await checkImageUrlValid(url)
+		form.value.icon = url
+		isInValid.value = false
+		innerVisible.value = false
+	} catch (error) {
+		isInValid.value = true
+		ElMessage.error('请输入正确的图片地址')
+	}
+}
+
+const checkImageUrlValid = (url: string) => {
+	return new Promise((resolve, reject) => {
+		const img = new Image()
+		img.src = url
+		img.addEventListener('load', resolve)
+		img.addEventListener('error', reject)
 	})
 }
 

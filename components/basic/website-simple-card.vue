@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-09-10 23:20:46
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-28 11:51:11
+ * @LastEditTime: 2023-09-29 13:30:47
  * @FilePath: \iki-bookmark-nuxt3\components\basic\website-simple-card.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -38,7 +38,7 @@
 						fit="contain"
 						lazy
 					/>
-					<el-text class="flex-1" truncated>{{ title }}</el-text>
+					<el-text class="flex-1" truncated>{{ icon }}</el-text>
 					<el-dropdown
 						:class="['bm-website_bar', { 'is-active': dropdownVisible }]"
 						trigger="click"

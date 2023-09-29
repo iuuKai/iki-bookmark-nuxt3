@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-22 23:27:28
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-28 13:58:13
+ * @LastEditTime: 2023-09-29 14:09:47
  * @FilePath: \iki-bookmark-nuxt3\components\basic\image.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -59,21 +59,23 @@ const props = defineProps({
 	}
 })
 
-const propsSrc = props.src.replace(/^\/\//, 'https://')
+const propsSrc = computed(() => props.src.replace(/^\/\//, 'https://'))
 const fitClass = computed(() => (props.fit ? `object-${props.fit}` : ''))
 
 const url = ref('')
 const state = ref(0)
 
+watch(propsSrc, () => loadImage())
+
 let img: HTMLImageElement | null
 
 const loadImage = () => {
-	if (!propsSrc) return (state.value = -1)
+	if (!propsSrc.value) return (state.value = -1)
 
 	const worker = new Worker()
 	worker.postMessage({
 		id: 'img',
-		url: propsSrc
+		url: propsSrc.value
 	})
 	worker.addEventListener('message', (e: MessageEvent) => {
 		const { code, msg, url: src } = e.data
@@ -85,7 +87,7 @@ const loadImage = () => {
 		} else {
 			// 原地址二次加载
 			img = new Image()
-			img.src = propsSrc
+			img.src = propsSrc.value
 			img.addEventListener('load', handleImageResult, false)
 			img.addEventListener('error', handleImageResult, false)
 		}
@@ -115,8 +117,8 @@ const vLazy = {
 	},
 	beforeUnmount() {
 		if (img) {
-			// img.removeEventListener('load', handleImageResult, false)
-			// img.removeEventListener('error', handleImageResult, false)
+			img.removeEventListener('load', handleImageResult, false)
+			img.removeEventListener('error', handleImageResult, false)
 			img = null
 		}
 	}
