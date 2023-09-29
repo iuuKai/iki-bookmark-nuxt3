@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-06 12:24:38
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-26 17:37:52
+ * @LastEditTime: 2023-09-30 01:12:10
  * @FilePath: \iki-bookmark-nuxt3\pages\index.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -132,38 +132,6 @@ const handleClick = async (websiteInfo: any) => {
 	} finally {
 		isSubmitLoading.value = false
 	}
-}
-
-const configLogData = ({
-	total = 0,
-	add = 0,
-	del = 0
-}: {
-	total: number
-	add?: number
-	del?: number
-}) => {
-	const cloneConfig = JSON.parse(JSON.stringify(repoStore.CONFIG))
-	const log = cloneConfig.log
-	const p = path.value
-	const curDate = dayjs().format('YYYY-MM-DD')
-	if (log && log[p]) {
-		log[p][curDate] = {
-			total,
-			add: log[p][curDate] ? log[p][curDate].add + add : add,
-			del: log[p][curDate] ? log[p][curDate].del + del : del
-		}
-	} else {
-		;(log ?? ((cloneConfig.log = {}) && cloneConfig.log))[p] = {
-			[curDate]: {
-				total,
-				add,
-				del
-			}
-		}
-	}
-
-	return { ...cloneConfig }
 }
 </script>
 

@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-14 06:20:11
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-30 00:57:14
+ * @LastEditTime: 2023-09-30 01:11:42
  * @FilePath: \iki-bookmark-nuxt3\pages\bookmarks.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -338,40 +338,6 @@ const deleteWebsite = async (id?: string, pid?: string) => {
 		console.error(error.message ?? error)
 		ElMessage.error('删除失败，请重试')
 	}
-}
-
-const configLogData = ({
-	total = 0,
-	add = 0,
-	del = 0
-}: {
-	total: number
-	add?: number
-	del?: number
-}) => {
-	const cloneConfig = JSON.parse(JSON.stringify(repoStore.CONFIG))
-	const log = { ...cloneConfig.log }
-	const p = path.value
-	const curDate = dayjs().format('YYYY-MM-DD')
-	console.log('%c [ curDate ]-356', 'font-size:13px; background:pink; color:#bf2c9f;', curDate)
-	console.log('%c [ log[p] ]-358', 'font-size:13px; background:pink; color:#bf2c9f;', log[p])
-	if (log && log[p] && curDate in log[p]) {
-		log[p][curDate] = {
-			total,
-			add: log[p][curDate].add + add,
-			del: log[p][curDate].del + del
-		}
-	} else {
-		;(log && log[p] ? log : (cloneConfig.log = {}) && cloneConfig.log)[p] = {
-			[curDate]: {
-				total,
-				add,
-				del
-			}
-		}
-	}
-
-	return { ...cloneConfig }
 }
 
 const handleChangeDialog = (title: string) => {
