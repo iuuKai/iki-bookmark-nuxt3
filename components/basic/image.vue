@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-22 23:27:28
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-29 15:38:49
+ * @LastEditTime: 2023-09-30 00:04:18
  * @FilePath: \iki-bookmark-nuxt3\components\basic\image.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -67,6 +67,24 @@ const state = ref(0)
 watch(propsSrc, () => loadImage())
 
 let img: HTMLImageElement | null
+let isProxy = false
+
+const handleImageResult = (e: Event) => {
+	const el = e.target as HTMLImageElement
+	if (e.type === 'load') {
+		url.value = el.src
+		state.value = 1
+	} else if (e.type === 'error') {
+		if (isProxy) {
+			// 加载失败
+			state.value = -1
+		} else {
+			// 使用代理，再次加载
+			isProxy = true
+			el.src = '/api/proxy/' + url
+		}
+	}
+}
 
 const loadImage = () => {
 	if (!propsSrc.value) return (state.value = -1)
@@ -91,17 +109,6 @@ const loadImage = () => {
 			img.addEventListener('error', handleImageResult, false)
 		}
 	})
-}
-
-const handleImageResult = (e: Event) => {
-	const el = e.target as HTMLImageElement
-	if (e.type === 'load') {
-		url.value = el.src
-		state.value = 1
-	} else if (e.type === 'error') {
-		// 加载失败
-		state.value = -1
-	}
 }
 
 // 指令
