@@ -265,12 +265,17 @@ const hanldeSaveRemoteIcon = async (url: string) => {
 	}
 }
 
+let isProxy = false
 const checkImageUrlValid = (url: string) => {
 	return new Promise((resolve, reject) => {
 		const img = new Image()
 		img.src = url
 		img.addEventListener('load', resolve)
-		img.addEventListener('error', reject)
+		img.addEventListener('error', () => {
+			if (isProxy) return reject()
+			isProxy = true
+			img.src = '/api/proxy/' + url
+		})
 	})
 }
 
