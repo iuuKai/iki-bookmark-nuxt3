@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-22 23:27:28
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-30 00:04:18
+ * @LastEditTime: 2023-09-30 19:21:40
  * @FilePath: \iki-bookmark-nuxt3\components\basic\image.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -87,6 +87,7 @@ const handleImageResult = (e: Event) => {
 }
 
 const loadImage = () => {
+	if (url.value) return
 	if (!propsSrc.value) return (state.value = -1)
 
 	const worker = new Worker()
