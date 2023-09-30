@@ -164,7 +164,6 @@ watch(oauth, async (v: any) => {
 	if (!v) return
 	try {
 		const { meta, data, statusCode, type } = v
-		console.log(v)
 		if (!statusCode && meta.code === 200) {
 			token.value = data.access_token
 			userStore.setType(type)
