@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-09-11 09:58:49
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-30 18:35:36
+ * @LastEditTime: 2023-09-30 23:01:24
  * @FilePath: \iki-bookmark-nuxt3\components\common\dialog\update-website.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -44,7 +44,13 @@
 							</div>
 							<template #reference>
 								<div :class="['bm-upload-icon', { 'is-active': isPopoverShow }]">
-									<img v-if="form.icon" class="max-h-full" :src="form.icon" />
+									<!-- <img v-if="form.icon" class="max-h-full" :src="form.icon" /> -->
+									<BasicImage
+										v-if="form.icon"
+										loadingIconSize="0.8rem"
+										:src="form.icon"
+										fit="contain"
+									/>
 									<Icon v-else name="fluent:camera-24-filled" size="1.5rem" />
 								</div>
 							</template>
