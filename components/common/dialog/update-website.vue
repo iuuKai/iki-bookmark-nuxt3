@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-09-11 09:58:49
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-30 23:01:24
+ * @LastEditTime: 2023-09-30 23:20:40
  * @FilePath: \iki-bookmark-nuxt3\components\common\dialog\update-website.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -48,6 +48,7 @@
 									<BasicImage
 										v-if="form.icon"
 										loadingIconSize="0.8rem"
+										class="w-full h-full"
 										:src="form.icon"
 										fit="contain"
 									/>
