@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-14 06:20:12
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-26 19:11:08
+ * @LastEditTime: 2023-09-30 10:36:25
  * @FilePath: \iki-bookmark-nuxt3\pages\statistic.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -62,7 +62,7 @@ const configLog = computed<any>(() => (path.value && repoStore.CONFIG.log?.[path
 const websiteStatisticHeatmapData = computed(() => {
 	const title: string = '书签新增日历'
 	const xData: string[] = []
-	const data = Object.keys(configLog.value).map(date => [date, configLog.value[date].total])
+	const data = Object.keys(configLog.value).map(date => [date, configLog.value[date].add])
 	const series = {
 		type: 'heatmap',
 		coordinateSystem: 'calendar',

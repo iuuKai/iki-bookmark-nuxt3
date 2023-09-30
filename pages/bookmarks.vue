@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-14 06:20:11
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-30 01:11:42
+ * @LastEditTime: 2023-09-30 08:48:04
  * @FilePath: \iki-bookmark-nuxt3\pages\bookmarks.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -165,6 +165,7 @@ const handleSubmit = async (type: string) => {
 		if (type === 'website') updateWebsite(cloneData)
 		else updateCategory(cloneData)
 		await repoStore.apiUpdateWebsiteData(cloneData)
+
 		if (type === 'website') {
 			const total = cloneData.reduce((res: any, cur: any) => {
 				res += cur.list.length
@@ -173,6 +174,7 @@ const handleSubmit = async (type: string) => {
 			const cloneConfig = configLogData({ path: path.value, total, add: 1 })
 			await repoStore.apiUpdateConfigData(cloneConfig)
 		}
+
 		ElMessage.success(`${dialogTitle.value}成功!`)
 		dialogVisible.value = false
 	} catch (error: any) {

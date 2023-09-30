@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-09-11 01:18:08
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-30 01:11:21
+ * @LastEditTime: 2023-09-30 11:40:19
  * @FilePath: \iki-bookmark-nuxt3\utils\custom-function.ts
  * @Description:
  * @QQ/微信: 790331286
@@ -40,11 +40,12 @@ export const configLogData = ({
 	const cloneConfig = JSON.parse(JSON.stringify(useRepoStore().CONFIG))
 	const log = cloneConfig.log
 	const curDate = dayjs().format('YYYY-MM-DD')
+
 	if (log && log[path]) {
 		log[path][curDate] = {
 			total,
-			add: log[path][curDate] ? log[path][curDate].add + add : add,
-			del: log[path][curDate] ? log[path][curDate].del + del : del
+			add: (log[path][curDate]?.add ?? 0) + add,
+			del: (log[path][curDate]?.del ?? 0) + del
 		}
 	} else {
 		;(log ?? ((cloneConfig.log = {}) && cloneConfig.log))[path] = {
