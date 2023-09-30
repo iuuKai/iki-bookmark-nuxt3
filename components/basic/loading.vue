@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-09-26 18:27:52
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-26 19:19:13
+ * @LastEditTime: 2023-09-30 23:42:56
  * @FilePath: \iki-bookmark-nuxt3\components\basic\loading.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -10,7 +10,7 @@
 
 <template>
 	<div :class="['bm-chase_wrap', { absolute: full, fixed: screen, 'rounded-full': circle }]">
-		<div class="bm-chase">
+		<div class="bm-chase" :style="{ width: size, height: size }">
 			<div class="bm-chase_dot"></div>
 			<div class="bm-chase_dot"></div>
 			<div class="bm-chase_dot"></div>
@@ -25,7 +25,7 @@
 defineProps({
 	size: {
 		type: String,
-		default: '40px'
+		default: '50%'
 	},
 	circle: {
 		type: Boolean,
@@ -48,7 +48,6 @@ defineProps({
 
 	.bm-chase {
 		animation: bm-chase 2.5s infinite linear both;
-		@apply w-1/2 h-1/2;
 
 		.bm-chase_dot {
 			animation: bm-chase_dot 2s infinite ease-in-out both;
