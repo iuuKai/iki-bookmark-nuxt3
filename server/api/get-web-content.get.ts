@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-09-21 07:23:30
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-29 09:18:39
+ * @LastEditTime: 2023-10-01 00:36:27
  * @FilePath: \iki-bookmark-nuxt3\server\api\get-web-content.get.ts
  * @Description:
  * @QQ/微信: 790331286
@@ -25,7 +25,7 @@ export default defineEventHandler(async (event: H3Event) => {
 					const dom = new JSDOM(res.data)
 					const $ = dom.window.document
 					const title = ($.querySelector('title')?.textContent ?? url).trim()
-					const icon_url = $.querySelector('link[rel~="icon"]')?.getAttribute('href') ?? ''
+					const icon_url = ($.querySelector('link[rel~="icon"]')?.getAttribute('href') ?? '').trim()
 					const description =
 						$.querySelector('meta[name="description"]')?.getAttribute('content') ?? ''
 

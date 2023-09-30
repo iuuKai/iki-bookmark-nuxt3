@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-09-11 09:58:49
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-30 23:20:40
+ * @LastEditTime: 2023-10-01 00:35:56
  * @FilePath: \iki-bookmark-nuxt3\components\common\dialog\update-website.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -236,9 +236,9 @@ const handleGetWebContent = async (formItemEl: FormItemInstance | undefined, url
 		isGetWebContentLoading.value = true
 		const { statusCode, statusMessage, data = {} }: any = await useApiGetWebContent({ url })
 		if (statusCode) throw new Error(statusMessage)
-		form.value.icon = data.icon
-		form.value.title = data.title.slice(0, MaxLengthTitle) || data.url
-		form.value.description = data.description.slice(0, MaxLengthDescription)
+		form.value.icon = data.icon.trim()
+		form.value.title = (data.title.slice(0, MaxLengthTitle) || data.url).trim()
+		form.value.description = data.description.slice(0, MaxLengthDescription).trim()
 	} catch (error) {
 		ElMessage.error('抓取失败')
 	} finally {
