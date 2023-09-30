@@ -24,7 +24,7 @@ export default defineEventHandler(async (event: H3Event) => {
 					const { JSDOM } = jsdom
 					const dom = new JSDOM(res.data)
 					const $ = dom.window.document
-					const title = $.querySelector('title')?.textContent ?? url
+					const title = ($.querySelector('title')?.textContent ?? url).trim()
 					const icon_url = $.querySelector('link[rel~="icon"]')?.getAttribute('href') ?? ''
 					const description =
 						$.querySelector('meta[name="description"]')?.getAttribute('content') ?? ''
