@@ -2,7 +2,7 @@
  * @Author: iuukai
  * @Date: 2023-08-14 06:20:11
  * @LastEditors: iuukai
- * @LastEditTime: 2023-09-30 08:48:04
+ * @LastEditTime: 2023-10-05 05:50:10
  * @FilePath: \iki-bookmark-nuxt3\pages\bookmarks.vue
  * @Description: 
  * @QQ/微信: 790331286
@@ -261,11 +261,12 @@ const deleteCategory = (id: string, name: string) => {
 				res += cur.list.length
 				return res
 			}, 0)
-			const del = data.value.find((item: any) => item.id === id).list.length
+			const del = data.value.find((item: any) => item.id === id)?.list?.length ?? 0
 			const cloneConfig = configLogData({ path: path.value, total, del })
 			await repoStore.apiUpdateConfigData(cloneConfig)
 			ElMessage.success('删除成功')
-		} catch (error) {
+		} catch (error: any) {
+			console.log(error?.message ?? error)
 			ElMessage.error('删除失败，请重试')
 		}
 	})
@@ -337,7 +338,6 @@ const deleteWebsite = async (id?: string, pid?: string) => {
 		ElMessage.success('删除成功!')
 		selectList.value = []
 	} catch (error: any) {
-		console.error(error.message ?? error)
 		ElMessage.error('删除失败，请重试')
 	}
 }
