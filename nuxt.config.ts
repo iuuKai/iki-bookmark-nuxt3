@@ -60,7 +60,6 @@ export default defineNuxtConfig({
 		transpile: [/echarts/]
 	},
 	app: {
-		baseURL: '/nuxt3-ssr/',
 		// ssr 页面开启过渡动画后，切换页面过快会导致 dom 未加载报错
 		// pageTransition: { name: 'page', mode: 'out-in' },
 		head: {
