@@ -17,7 +17,7 @@
 		"gitee": "https://gitee.com/iuuKai"
 	},
 	"engines": {
-		"node": "24.x"
+		"node": ">=20.0.0"
 	},
 	"devDependencies": {
 		"@nuxt/devtools": "^0.8.3",
