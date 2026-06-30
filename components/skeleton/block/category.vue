@@ -57,6 +57,7 @@ defineProps({
 
 		.bm-category_title {
 			max-width: 120px;
+
 			@apply p-3 flex-none w-full text-center font-bold;
 		}
 

@@ -167,6 +167,7 @@ const handleReply = (text: string, editor: any) => {
 
 		.bm-paper_bg {
 			background-image: v-bind('paperBg');
+
 			@apply absolute top-0 left-0 w-full h-full bg-fixed bg-repeat opacity-20 pointer-events-none z-0;
 		}
 	}

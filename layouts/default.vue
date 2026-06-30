@@ -18,9 +18,11 @@
 					</el-aside>
 					<section class="flex-auto flex flex-col">
 						<LayoutHeader :menu-title="curMenuTitle" />
-						<div class="bm-scroll-wrapper">
-							<div class="mx-auto w-[calc(100%-30px)] h-full">
-								<slot />
+						<div v-loading="scrollWrapperLoading" class="bm-scroll-loading-host">
+							<div class="bm-scroll-wrapper">
+								<div class="mx-auto w-[calc(100%-30px)] h-full">
+									<slot />
+								</div>
 							</div>
 						</div>
 					</section>
@@ -44,7 +46,10 @@
 </template>
 
 <script setup lang="ts">
+import { useScrollWrapperLoading } from '@/composables/useScrollWrapperLoading'
+
 const curMenuTitle = ref('')
+const scrollWrapperLoading = useScrollWrapperLoading()
 </script>
 
 <style lang="less" scoped>
@@ -55,9 +60,12 @@ const curMenuTitle = ref('')
 		.bm-content-wrapper {
 			@apply flex flex-1 h-full rounded-3xl backdrop-blur-md bg-white/60 overflow-hidden;
 
+			.bm-scroll-loading-host {
+				@apply mx-3 mb-6 h-full relative overflow-hidden;
+			}
+
 			.bm-scroll-wrapper {
-				// pr-3 pl-6
-				@apply mx-3 mb-6 h-full overflow-y-auto;
+				@apply h-full overflow-y-auto;
 			}
 		}
 	}

@@ -1,19 +1,9 @@
-<!--
- * @Author: iuukai
- * @Date: 2023-08-14 06:20:11
- * @LastEditors: iuukai
- * @LastEditTime: 2023-10-05 05:50:10
- * @FilePath: \iki-bookmark-nuxt3\pages\bookmarks.vue
- * @Description: 
- * @QQ/微信: 790331286
--->
 <template>
 	<div class="bm-bookmarks">
 		<div>
 			<el-button :disabled="isMultiple" type="primary" @click="handleChangeDialog('添加网址')">
 				添加网址
 			</el-button>
-			<!-- <el-button type="primary" @click="handleChangeDialog('查看分类')">查看分类</el-button> -->
 			<el-button
 				v-show="isMultiple"
 				:disabled="isEmpty(selectList)"
@@ -85,60 +75,61 @@ import { dayjs } from 'element-plus'
 
 definePageMeta({ middleware: ['a-need-login', 'b-need-repo'] })
 
+const DEFAULT_CATEGORY = '默认'
+
 const repoStore = useRepoStore()
 const updateDialogRef = ref()
-const dialogTitle = ref<string>('')
-const loading = ref(false)
+const dialogTitle = ref('')
+const loading = ref(true)
 const isSubmitLoading = ref(false)
+const path = ref('')
 
-// 记录获取数据的文件 path
-const path = ref<string>('')
-const data = computed(() => (path.value ? repoStore.dataJSON[path.value] : []))
-const flat = computed(() => (path.value ? repoStore.flatDataJSON[path.value] : []))
+const data = computed(() => (path.value ? repoStore.dataJSON[path.value] ?? [] : []))
+const flat = computed(() => (path.value ? repoStore.flatDataJSON[path.value] ?? [] : []))
 const categoryList = computed(() =>
 	data.value.map((item: any) => ({
 		value: item.id,
 		label: item.category
 	}))
 )
+
 const curWebsiteInfo = ref<any>({})
 const curCategoryInfo = ref<any>({})
-
 const selectList = ref<string[]>([])
 const isMultiple = ref(false)
+
 const dialogVisible = computed({
 	get: () => !!dialogTitle.value,
 	set: (v: boolean) => !v && handleChangeDialog('')
 })
 
-watch(dialogVisible, (v: boolean) => {
+watch(dialogVisible, (visible: boolean) => {
 	const defaultCategoryId =
-		categoryList.value.find(({ label }: { label: string }) => label === '默认')?.value ?? ''
-	if (!v && unref(updateDialogRef)?.clearForm)
+		categoryList.value.find(({ label }: { label: string }) => label === DEFAULT_CATEGORY)?.value ?? ''
+	if (!visible && unref(updateDialogRef)?.clearForm) {
 		unref(updateDialogRef).clearForm({ categoryId: defaultCategoryId })
-	// 初始化
+	}
 	if (isEmpty(curWebsiteInfo.value)) {
-		curWebsiteInfo.value = {
-			categoryId: defaultCategoryId
-		}
+		curWebsiteInfo.value = { categoryId: defaultCategoryId }
 	}
 })
 
-watch(isMultiple, (v: boolean) => {
-	if (!v) {
+watch(isMultiple, (value: boolean) => {
+	if (!value) {
 		selectList.value = []
 		ElNotification({
 			title: '已关闭批量操作',
-			message: '点击元素将跳转新页签!',
-			type: 'error'
+			message: '点击卡片会直接跳转到目标站点',
+			type: 'warning'
 		})
-	} else {
-		ElNotification({
-			title: '已开启批量操作',
-			message: '请点击元素进行选择',
-			type: 'success'
-		})
+		return
 	}
+
+	ElNotification({
+		title: '已开启批量操作',
+		message: '点击书签即可加入或取消选择',
+		type: 'success'
+	})
 })
 
 onBeforeMount(() => {
@@ -147,17 +138,14 @@ onBeforeMount(() => {
 
 async function initData() {
 	try {
-		loading.value = true
 		const res: any = await repoStore.apiGetWebsiteData(true)
-		// 延迟 500ms 避免直接跳过 loading（因为有做缓存，会跳过请求）
-		await new Promise(resolve => setTimeout(resolve, 500))
 		path.value = res
 	} finally {
 		loading.value = false
 	}
 }
 
-const handleSubmit = async (type: string) => {
+const handleSubmit = async (type: 'website' | 'category') => {
 	try {
 		isSubmitLoading.value = true
 		const cloneData: any = data.value.map((item: any) => ({ ...item, list: [...item.list] }))
@@ -167,15 +155,12 @@ const handleSubmit = async (type: string) => {
 		await repoStore.apiUpdateWebsiteData(cloneData)
 
 		if (type === 'website') {
-			const total = cloneData.reduce((res: any, cur: any) => {
-				res += cur.list.length
-				return res
-			}, 0)
+			const total = cloneData.reduce((res: number, cur: any) => res + cur.list.length, 0)
 			const cloneConfig = configLogData({ path: path.value, total, add: 1 })
 			await repoStore.apiUpdateConfigData(cloneConfig)
 		}
 
-		ElMessage.success(`${dialogTitle.value}成功!`)
+		ElMessage.success(`${dialogTitle.value}成功`)
 		dialogVisible.value = false
 	} catch (error: any) {
 		console.error(error.message ?? error)
@@ -188,22 +173,18 @@ const handleSubmit = async (type: string) => {
 const handleCategoryCommand = async (command: string, item?: any) => {
 	switch (command) {
 		case '删除分类':
-			if (item?.category === '默认') ElMessage.error('默认不可删除!')
-			else deleteCategory(item.id, item.category)
+			if (item?.category === DEFAULT_CATEGORY) {
+				ElMessage.error('默认分类不可删除')
+			} else {
+				deleteCategory(item.id, item.category)
+			}
 			break
 		default:
 			if (/编辑/.test(command)) {
-				const { list, ...catetoryInfo } = item
-				curCategoryInfo.value = { ...catetoryInfo }
-			} else {
-				if (/分类/.test(command)) {
-					// 添加分类
-				} else {
-					// 添加网址
-					curWebsiteInfo.value = {
-						categoryId: item.id
-					}
-				}
+				const { list, ...categoryInfo } = item
+				curCategoryInfo.value = { ...categoryInfo }
+			} else if (/网址/.test(command)) {
+				curWebsiteInfo.value = { categoryId: item?.id ?? '' }
 			}
 			handleChangeDialog(command)
 			break
@@ -213,7 +194,7 @@ const handleCategoryCommand = async (command: string, item?: any) => {
 const handleWebsiteCommand = async (command: string, item: any, pid: string) => {
 	switch (command) {
 		case '复制链接': {
-			const [err, succ]: any = await useCopy(item.url)
+			const [err]: any = await useCopy(item.url)
 			if (err) ElMessage.error('复制失败')
 			else ElMessage.success('复制成功')
 			break
@@ -231,22 +212,25 @@ const handleWebsiteCommand = async (command: string, item: any, pid: string) => 
 	}
 }
 
-const updateCategory = (cloneData: any) => {
+const updateCategory = (cloneData: any[]) => {
 	const { id, ...categoryObj } = curCategoryInfo.value
-	const isNewCategory: boolean = !id
+	const isNewCategory = !id
+
 	if (isNewCategory) {
 		cloneData.push({
 			id: useGenerateId(),
 			category: categoryObj.category,
 			list: []
 		})
-	} else {
-		const curCategory = cloneData.find((item: any) => item.id === id)
-		Object.keys(categoryObj).forEach(k => (curCategory[k] = categoryObj[k]))
+		return
 	}
+
+	const curCategory = cloneData.find((item: any) => item.id === id)
+	Object.keys(categoryObj).forEach(k => (curCategory[k] = categoryObj[k]))
 }
+
 const deleteCategory = (id: string, name: string) => {
-	ElMessageBox.confirm(`是否删除分类【${name}】并清除子集网址？`, 'Warning', {
+	ElMessageBox.confirm(`是否删除分类【${name}】并清空其下所有网址？`, 'Warning', {
 		type: 'warning',
 		confirmButtonText: '确定',
 		cancelButtonText: '取消'
@@ -257,10 +241,7 @@ const deleteCategory = (id: string, name: string) => {
 				.filter((item: any) => item.id !== id)
 			await repoStore.apiUpdateWebsiteData(cloneData)
 
-			const total = cloneData.reduce((res: any, cur: any) => {
-				res += cur.list.length
-				return res
-			}, 0)
+			const total = cloneData.reduce((res: number, cur: any) => res + cur.list.length, 0)
 			const del = data.value.find((item: any) => item.id === id)?.list?.length ?? 0
 			const cloneConfig = configLogData({ path: path.value, total, del })
 			await repoStore.apiUpdateConfigData(cloneConfig)
@@ -272,21 +253,17 @@ const deleteCategory = (id: string, name: string) => {
 	})
 }
 
-const updateWebsite = (cloneData: any) => {
-	const isNetWebsite: boolean = !curWebsiteInfo.value.id
-	const isNewCategory: boolean = !categoryList.value
+const updateWebsite = (cloneData: any[]) => {
+	const isNewWebsite = !curWebsiteInfo.value.id
+	const isNewCategory = !categoryList.value
 		.map((item: any) => item.value)
 		.includes(curWebsiteInfo.value.categoryId)
 	const { categoryId, ...website } = curWebsiteInfo.value
 
-	/**
-	 * 新增 or 编辑
-	 */
-	if (isNetWebsite) {
+	if (isNewWebsite) {
 		if (isNewCategory) {
 			cloneData.push({
 				id: useGenerateId(),
-				// el-select 新建，categoryId 为 label
 				category: categoryId,
 				list: [{ created_at: dayjs().format(), id: useGenerateId(), ...website }]
 			})
@@ -294,25 +271,25 @@ const updateWebsite = (cloneData: any) => {
 			const curCategory = cloneData.find((item: any) => item.id === categoryId)
 			curCategory.list.push({ created_at: dayjs().format(), id: useGenerateId(), ...website })
 		}
-	} else {
-		// 更改分类，需要删除在旧分类里的数据
-		const { pid, index } = flat.value.find((item: any) => item.id === website.id)
-		const oldCategory = cloneData.find((item: any) => item.id === pid)
-		oldCategory.list.splice(index, 1)
+		return
+	}
 
-		if (isNewCategory) {
-			cloneData.push({
-				id: useGenerateId(),
-				// el-select 新建，categoryId 为 label
-				category: categoryId,
-				list: [{ ...website }]
-			})
-		} else {
-			const curCategory = cloneData.find((item: any) => item.id === categoryId)
-			curCategory.list.push({ ...website })
-		}
+	const { pid, index } = flat.value.find((item: any) => item.id === website.id)
+	const oldCategory = cloneData.find((item: any) => item.id === pid)
+	oldCategory.list.splice(index, 1)
+
+	if (isNewCategory) {
+		cloneData.push({
+			id: useGenerateId(),
+			category: categoryId,
+			list: [{ ...website }]
+		})
+	} else {
+		const curCategory = cloneData.find((item: any) => item.id === categoryId)
+		curCategory.list.push({ ...website })
 	}
 }
+
 const deleteWebsite = async (id?: string, pid?: string) => {
 	try {
 		const cloneData: any = data.value.map((item: any) => ({ ...item, list: [...item.list] }))
@@ -327,17 +304,14 @@ const deleteWebsite = async (id?: string, pid?: string) => {
 		}
 		await repoStore.apiUpdateWebsiteData(cloneData)
 
-		const total = cloneData.reduce((res: any, cur: any) => {
-			res += cur.list.length
-			return res
-		}, 0)
+		const total = cloneData.reduce((res: number, cur: any) => res + cur.list.length, 0)
 		const del = selectList.value.length || 1
 		const cloneConfig = configLogData({ path: path.value, total, del })
 		await repoStore.apiUpdateConfigData(cloneConfig)
 
-		ElMessage.success('删除成功!')
+		ElMessage.success('删除成功')
 		selectList.value = []
-	} catch (error: any) {
+	} catch {
 		ElMessage.error('删除失败，请重试')
 	}
 }

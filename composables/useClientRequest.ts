@@ -1,13 +1,3 @@
-/*
- * @Author: iuukai
- * @Date: 2023-08-30 17:20:34
- * @LastEditors: iuukai
- * @LastEditTime: 2023-09-23 23:58:57
- * @FilePath: \iki-bookmark-nuxt3\composables\useClientRequest.ts
- * @Description:
- * @QQ/微信: 790331286
- */
-// import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/store/modules/user'
 
 interface RequestOptions {
@@ -23,31 +13,40 @@ export const useClientRequest = (options: RequestOptions) => {
 	const isGET = method.toLowerCase() === 'get'
 	const token = userStore.token || params.token
 	const type = userStore.oauthType || userStore.type
-	if (type && !params.type) params['type'] = type
+	if (type && !params.type) params.type = type
 
 	return new Promise((resolve, reject) => {
+		let settled = false
+		const safeResolve = (data: any) => {
+			if (settled) return
+			settled = true
+			resolve(data)
+		}
+		const safeReject = (error: any) => {
+			if (settled) return
+			settled = true
+			reject(error)
+		}
+
 		useFetch(url, {
-			key: url + Date.now(),
+			key: `${String(url)}-${Date.now()}`,
 			method,
 			headers: { ...headers },
 			timeout: 15000,
-			// 失败后，不自动重复发送
-			// autoRetry: false,
-			onRequest({ request, options }: any) {
-				if (token) options.headers['Authorization'] = `Bearer ${token}`
+			onRequest({ options }: any) {
+				if (token) options.headers.Authorization = `Bearer ${token}`
 				options[isGET ? 'params' : 'body'] = params
 			},
-			onRequestError({ request, options, error }) {
-				// ElMessage.closeAll()
-				// error && ElMessage.error('Sorry, The Data Request Failed')
-				// Handle the request errors
+			onRequestError({ error }) {
+				safeReject(error || new Error('request failed'))
 			},
-			onResponse({ request, response, options }) {
-				resolve(response._data)
-				// ElMessage.error(msg ?? 'Sorry, The Data Request Failed.')
+			onResponse({ response }) {
+				console.log('useClientRequest onResponse:', response)
+				safeResolve(response._data)
 			},
-			onResponseError({ request, response, options }) {
-				console.log('🚀 ~ file: useClientRequest.ts:48 ~ onResponseError ~ request:', request)
+			onResponseError({ request, response }) {
+				console.log('useClientRequest onResponseError:', request)
+				safeReject(response?._data || new Error(response?.statusText || 'response failed'))
 			}
 		})
 	})

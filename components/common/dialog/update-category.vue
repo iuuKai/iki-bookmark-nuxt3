@@ -35,7 +35,7 @@ import type { FormInstance, FormItemInstance } from 'element-plus'
 const emits = defineEmits(['update:formData', 'cancel', 'confirm'])
 const props = defineProps({
 	isSubmitLoading: {
-		typee: Boolean,
+		type: Boolean,
 		default: false
 	},
 	formData: {

@@ -8,14 +8,9 @@
  * @QQ/微信: 790331286
 -->
 <template>
-	<ClientOnly>
-		<component :is="mapComponent[type]" :loading="loading" :count="count" :sub-count="subCount">
-			<slot />
-		</component>
-		<template #fallback>
-			<component :is="mapComponent[type]" loading :count="count" :sub-count="subCount" />
-		</template>
-	</ClientOnly>
+	<component :is="mapComponent[type]" :loading="loading" :count="count" :sub-count="subCount">
+		<slot />
+	</component>
 </template>
 
 <script setup lang="ts">

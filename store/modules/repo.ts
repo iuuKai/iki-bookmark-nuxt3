@@ -118,6 +118,18 @@ export const useRepoStore = defineStore({
 			const path = 'website/data.json'
 			return this.apiGetRepoFileData({ path }, isInit)
 		},
+		async ensureInitReady() {
+			const userStore = useUserStore()
+			userStore.initStorageState()
+
+			if (userStore.token && !userStore.loginName) {
+				await userStore.apiGetUserInfo({}).catch(() => undefined)
+			}
+
+			if (!this.isHasRepo && userStore.loginName) {
+				await this.apiGetRepoInfo().catch(() => undefined)
+			}
+		},
 		apiUpdateConfigData(data?: any) {
 			const path = 'config.ibookmark.json'
 			return this.apiUpdateRepoFileData({ path, data })
@@ -148,7 +160,11 @@ export const useRepoStore = defineStore({
 		// 获取文件内容
 		async apiGetRepoFileData({ path }: RepoFileData, isInit: boolean = false) {
 			if (process.server) return
-			if (isInit && (!this.isHasRepo || !this.owner || !isEmpty(this.dataJSON[path]))) return path
+			if (isInit && !isEmpty(this.dataJSON[path])) return path
+			if (isInit && (!this.isHasRepo || !this.owner)) {
+				await this.ensureInitReady()
+				if (!this.isHasRepo || !this.owner) return Promise.reject(new Error('repo not ready'))
+			}
 			try {
 				const isJSON = /\.json$/i.test(path)
 				const params = {
@@ -157,10 +173,12 @@ export const useRepoStore = defineStore({
 					path: path
 				}
 				const { statusCode, statusMessage, data }: any = await useApiGetBookmarkContents(params)
+
 				if (statusCode) {
 					if (statusCode === 404) return this.setNotFoundPath(path)
 					else throw new Error(statusMessage)
 				}
+
 				const base64Content = Base64.dec(data.content) as string
 				const content = isJSON ? JSON.parse(base64Content) : base64Content
 				this.setSha(data.path, data.sha)
@@ -170,7 +188,6 @@ export const useRepoStore = defineStore({
 				}
 				return path
 			} catch (error: any) {
-				console.log(path, error)
 				return Promise.reject(error)
 			}
 		},

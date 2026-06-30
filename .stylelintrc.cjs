@@ -12,7 +12,7 @@ module.exports = {
 	/* 改用 VSC - CSScomb 插件 */
 	// plugins: ['stylelint-order'],
 	customSyntax: 'postcss-html',
-	extends: ['stylelint-config-standard', 'stylelint-config-prettier'],
+	extends: ['stylelint-config-standard'],
 	rules: {
 		'function-no-unknown': null,
 		'selector-class-pattern': null,
@@ -48,11 +48,8 @@ module.exports = {
 		'no-empty-source': null,
 		'string-quotes': null,
 		'named-grid-areas-no-invalid': null,
-		'unicode-bom': 'never',
 		'no-descending-specificity': null,
 		'font-family-no-missing-generic-family-keyword': null,
-		'declaration-colon-space-after': 'always-single-line',
-		'declaration-colon-space-before': 'never',
 		// 'declaration-block-trailing-semicolon': 'always',
 		'rule-empty-line-before': [
 			'always',

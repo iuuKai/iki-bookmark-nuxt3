@@ -22,7 +22,6 @@
 							:url="website.url"
 							:icon="website.icon"
 							:description="website.description"
-							:isSubmitLoading="isSubmitLoading"
 							@star-change="handleClick(website)"
 						/>
 					</div>
@@ -35,6 +34,7 @@
 
 <script setup lang="ts">
 import defaultMarks from '@/assets/db/index.json'
+import { useScrollWrapperLoading } from '@/composables/useScrollWrapperLoading'
 import { useRepoStore } from '@/store/modules/repo'
 import { dayjs } from 'element-plus'
 
@@ -47,19 +47,16 @@ interface FlatWebsite {
 }
 
 const repoStore = useRepoStore()
-const isSubmitLoading = ref(false)
-const loading = ref(false)
+const scrollWrapperLoading = useScrollWrapperLoading()
+const loading = ref(true)
 
 // 记录获取数据的文件 path
 const path = ref<string>('')
-const data = computed<any[]>(() => (path.value ? repoStore.dataJSON[path.value] : []))
-const flat = computed<any[]>(() => (path.value ? repoStore.flatDataJSON[path.value] : []))
+const data = computed<any[]>(() => (path.value ? repoStore.dataJSON[path.value] ?? [] : []))
+const flat = computed<any[]>(() => (path.value ? repoStore.flatDataJSON[path.value] ?? [] : []))
 
-const isStar = computed(
-	() =>
-		(id: string): boolean =>
-			flat.value && flat.value.findIndex((website: any) => website.id === id) > -1
-)
+const starredIdSet = computed(() => new Set(flat.value.map((website: any) => website.id)))
+const isStar = computed(() => (id: string): boolean => starredIdSet.value.has(id))
 
 onBeforeMount(() => {
 	initData()
@@ -67,10 +64,8 @@ onBeforeMount(() => {
 
 async function initData() {
 	try {
-		loading.value = true
 		const res: any = await repoStore.apiGetWebsiteData(true)
 		// 延迟 500ms 避免直接跳过 loading（因为有做缓存，会跳过请求）
-		await new Promise(resolve => setTimeout(resolve, 500))
 		path.value = res
 	} finally {
 		loading.value = false
@@ -80,7 +75,7 @@ async function initData() {
 const handleClick = async (websiteInfo: any) => {
 	if (!path.value) return
 	try {
-		isSubmitLoading.value = true
+		scrollWrapperLoading.value = true
 		let msg: string
 		const { id, tags, ...website } = websiteInfo
 		const cloneData: any = data.value.map((item: any) => ({ ...item, list: [...item.list] }))
@@ -130,7 +125,7 @@ const handleClick = async (websiteInfo: any) => {
 	} catch (error: any) {
 		console.error(error.message ?? error)
 	} finally {
-		isSubmitLoading.value = false
+		scrollWrapperLoading.value = false
 	}
 }
 </script>

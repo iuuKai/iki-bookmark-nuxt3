@@ -51,6 +51,7 @@ defineProps({
 
 		.bm-chase_dot {
 			animation: bm-chase_dot 2s infinite ease-in-out both;
+
 			@apply absolute left-0 top-0 w-full h-full;
 			@apply before:block before:w-1/4 before:h-1/4 before:bg-white before:rounded-full;
 

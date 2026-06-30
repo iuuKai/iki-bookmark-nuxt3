@@ -30,6 +30,7 @@ watch([width, height], ([w, h]: number[]) => globalStore.setScreenSize(w, h), { 
 <style scoped lang="less">
 .bm-bg__full {
 	background-image: v-bind('curBgImg');
+
 	@apply w-screen h-screen absolute bg-center bg-no-repeat bg-cover -z-50;
 }
 </style>

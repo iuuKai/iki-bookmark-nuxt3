@@ -8,10 +8,12 @@
  * @QQ/微信: 790331286
  */
 export type Type = 'github' | 'gitee'
+type Mode = 'dev' | 'build'
 
 export const useGitConfig = (_host: string, _type: Type) => {
 	const isDev = /127.0.0.1|localhost/.test(_host)
-	const mode: string = isDev ? 'dev' : 'build'
-	const { client_id, client_secret } = useAppConfig()[_type][mode]
+	const mode: Mode = isDev ? 'dev' : 'build'
+	const appConfig = useAppConfig() as any
+	const { client_id, client_secret } = appConfig[_type][mode]
 	return { client_id, client_secret }
 }

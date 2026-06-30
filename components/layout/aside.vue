@@ -1,12 +1,3 @@
-<!--
- * @Author: iuukai
- * @Date: 2023-08-19 13:47:59
- * @LastEditors: iuukai
- * @LastEditTime: 2023-09-28 15:45:27
- * @FilePath: \iki-bookmark-nuxt3\components\layout\aside.vue
- * @Description: 
- * @QQ/微信: 790331286
--->
 <template>
 	<div class="bm-aside">
 		<div class="logo">
@@ -14,19 +5,21 @@
 		</div>
 		<div class="bm-aside_nav">
 			<div
-				v-for="(menu, i) in menus"
+				:class="['bm-aside_indicator', { 'is-ready': indicatorReady }]"
+				:style="{ transform: lineTransform, height: navItemHeight }"
+			></div>
+			<div
+				v-for="menu in menus"
 				:key="menu.path"
 				ref="items"
 				:class="['bm-aside_item_wrap', { 'is-active': menu.path === route.path }]"
-				@click="handleClick(items[i], menu.path)"
+				@click="handleClick($event, menu.path)"
 				@mouseenter="handleMouseHover($event, true)"
 				@mouseleave="handleMouseHover($event, false)"
 			>
-				<div v-for="n in 2" :key="n" class="bm-aside_item" v-permissions="menu.permissions">
+				<div class="bm-aside_item" v-permissions="menu.permissions">
 					<el-space>
-						<ClientOnly fallback-tag="span">
-							<Icon :name="menu.icon" size="20px" />
-						</ClientOnly>
+						<Icon :name="menu.icon" size="20px" />
 						<span>{{ menu.name }}</span>
 					</el-space>
 				</div>
@@ -44,26 +37,26 @@ const router = useRouter()
 const menuStore = useMenuStore()
 const menus = menuStore.getMenus
 
-const items = ref()
-const navItemWidth = ref('0')
-const navItemHeight = ref('0')
-const startClipRect = computed(() => `rect(0, 0, auto, 0)`)
-const endClipRect = computed(() => `rect(0, ${navItemWidth.value}, auto, 0)`)
+const items = ref<HTMLElement[]>([])
+const navItemHeight = ref('36px')
+const indicatorReady = ref(false)
 
-// 点击状态时，line 停留位置
 const activeItemTop = ref(0)
-// 动态 line 改变值
 const hoverItemTop = ref(0)
-const lineTop = computed(() => `${hoverItemTop.value}px`)
+const lineTransform = computed(() => `translate3d(0, ${hoverItemTop.value}px, 0)`)
+
+const syncActiveLine = () => {
+	const target = items.value.find((el: HTMLElement) => el?.classList.contains('is-active'))
+	if (!target) return
+	activeItemTop.value = target.offsetTop
+	hoverItemTop.value = target.offsetTop
+	const item = target.querySelector('.bm-aside_item') as HTMLElement | null
+	if (item) navItemHeight.value = `${item.offsetHeight}px`
+	if (!indicatorReady.value) indicatorReady.value = true
+}
 
 onMounted(() => {
-	const curWrapper = unrefElement(useCurrentElement())
-	const navItem = curWrapper.querySelector('.is-active .bm-aside_item')
-	if (!navItem) return
-	activeItemTop.value = navItem.parentElement.offsetTop
-	hoverItemTop.value = navItem.parentElement.offsetTop
-	navItemWidth.value = navItem.clientWidth + 'px'
-	navItemHeight.value = navItem.clientHeight + 'px'
+	syncActiveLine()
 })
 
 watch(
@@ -71,22 +64,27 @@ watch(
 	(v: string) => {
 		const curMenu = menus.find(item => item.path === v)
 		emits('menu-click', curMenu?.name ?? '')
+		nextTick(syncActiveLine)
 	},
 	{ immediate: true }
 )
 
 const handleMouseHover = (e: Event, isEnter: boolean) => {
-	const $el: HTMLElement | null = e.target as HTMLElement
-	if (e.target && isEnter) {
-		hoverItemTop.value = $el.offsetTop
-	} else {
+	if (!isEnter) {
 		hoverItemTop.value = activeItemTop.value
+		return
 	}
+	const el = e.currentTarget as HTMLElement | null
+	if (!el) return
+	hoverItemTop.value = el.offsetTop
 }
 
-const handleClick = ($el: HTMLDivElement, path: string) => {
-	activeItemTop.value = $el.offsetTop
-	hoverItemTop.value = $el.offsetTop
+const handleClick = (e: Event, path: string) => {
+	const el = e.currentTarget as HTMLElement | null
+	if (el) {
+		activeItemTop.value = el.offsetTop
+		hoverItemTop.value = el.offsetTop
+	}
 	router.push(path)
 }
 </script>
@@ -100,37 +98,52 @@ const handleClick = ($el: HTMLDivElement, path: string) => {
 	}
 
 	.bm-aside_nav {
-		@apply relative flex flex-col space-y-4 select-none overflow-x-auto;
-		@apply before:absolute before:left-0 before:w-1 before:content-[''] before:bg-indigo-500 before:duration-300;
+		@apply relative flex flex-col space-y-4 select-none overflow-x-hidden;
 
-		&::before {
-			top: v-bind('lineTop');
-			height: v-bind('navItemHeight');
+		.bm-aside_indicator {
+			@apply absolute left-0 w-1 rounded bg-indigo-500;
+
+			opacity: 0;
+			transition: none;
+			will-change: transform;
+
+			&.is-ready {
+				opacity: 1;
+				transition: transform 200ms ease-out, opacity 120ms linear;
+			}
 		}
 
 		.bm-aside_item_wrap {
 			@apply relative border-l-4 border-transparent;
+			@apply transition-transform duration-150 ease-out;
 
-			&.is-active {
-				// @apply border-indigo-500;
-			}
+			&.is-active .bm-aside_item,
+			&:hover .bm-aside_item {
+				@apply text-white;
 
-			&.is-active,
-			&:hover {
-				.bm-aside_item {
-					&:first-child {
-						clip: v-bind('endClipRect');
-					}
+				&::before {
+					opacity: 1;
+					transform: scaleX(1);
 				}
 			}
 
 			.bm-aside_item {
-				@apply ml-2 pl-2 h-9 flex justify-start items-center bg-gradient-to-r cursor-pointer;
-				@apply rounded-md rounded-tr-none rounded-br-none ease-out duration-1000;
-				@apply first:absolute first:top-0 first:left-0 first:right-0 first:text-white first:from-indigo-500 first:z-10;
+				@apply relative ml-2 pl-2 h-9 flex items-center rounded-md rounded-tr-none rounded-br-none cursor-pointer;
+				@apply transition-colors duration-150 ease-out;
 
-				&:first-child {
-					clip: v-bind('startClipRect');
+				contain: layout paint;
+
+				&::before {
+					content: '';
+
+					@apply absolute inset-0 rounded-md rounded-tr-none rounded-br-none bg-gradient-to-r from-indigo-500;
+
+					opacity: 0;
+					transform: scaleX(0.92);
+					transform-origin: left center;
+					transition: transform 180ms ease-out, opacity 180ms ease-out;
+					will-change: transform, opacity;
+					z-index: -1;
 				}
 			}
 		}

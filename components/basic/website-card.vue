@@ -1,17 +1,8 @@
-<!--
- * @Author: iuukai
- * @Date: 2023-08-23 04:19:30
- * @LastEditors: iuukai
- * @LastEditTime: 2023-09-28 12:15:17
- * @FilePath: \iki-bookmark-nuxt3\components\basic\website-card.vue
- * @Description: 
- * @QQ/微信: 790331286
--->
 <template>
 	<div class="bm-website_card">
-		<a v-loading="isLoading" v-ban-click class="bm-website" :href="url" target="_blank">
+		<a class="bm-website" :href="url" target="_blank">
 			<div class="bm-website_header" :title="title">
-				<BasicImage class="w-10 h-10" :src="icon" fit="contain" lazy circle />
+				<BasicImage class="w-10 h-10" :src="iconUrl" fit="contain" lazy circle />
 				<el-text class="bm-website_title" truncated tag="div">{{ title }}</el-text>
 				<div
 					:class="['bm-website_bar', { 'is-star': isStar }]"
@@ -30,44 +21,11 @@
 						</ClientOnly>
 					</el-text>
 				</div>
-				<!-- <el-dropdown
-					:class="['bm-website_bar', { 'is-active': dropdownVisible }]"
-					trigger="click"
-					@visible-change="handleVisibleChange"
-				>
-					<div class="p-2 pr-4" @click.stop.prevent>
-						<Icon name="uiw:more" size="1rem" />
-					</div>
-					<template #dropdown>
-						<el-dropdown-menu>
-							<el-dropdown-item>Action 1</el-dropdown-item>
-							<el-dropdown-item>Action 2</el-dropdown-item>
-							<el-dropdown-item>Action 3</el-dropdown-item>
-							<el-dropdown-item>Action 4</el-dropdown-item>
-							<el-dropdown-item>Action 5</el-dropdown-item>
-						</el-dropdown-menu>
-					</template>
-				</el-dropdown> -->
 			</div>
 			<div class="bm-website_content">
-				<ClientOnly>
-					<el-tooltip
-						popper-class="max-w-[12rem]"
-						effect="dark"
-						:content="description"
-						placement="bottom"
-						:visible="tooltipVisible && !!description"
-					>
-						<el-text
-							class="!self-start line-clamp-2"
-							tag="div"
-							@mouseenter="tooltipVisible = true"
-							@mouseleave="tooltipVisible = false"
-						>
-							{{ description }}
-						</el-text>
-					</el-tooltip>
-				</ClientOnly>
+				<el-text class="!self-start line-clamp-2" tag="div" :title="description">
+					{{ description }}
+				</el-text>
 			</div>
 		</a>
 	</div>
@@ -79,10 +37,6 @@ import { LOGIN_NAME, HASREPO_NAME } from '@/permissions'
 const emits = defineEmits(['star-change'])
 const props = defineProps({
 	isStar: {
-		type: Boolean,
-		default: false
-	},
-	isLoading: {
 		type: Boolean,
 		default: false
 	},
@@ -112,22 +66,10 @@ const props = defineProps({
 	}
 })
 
-const tooltipVisible = ref(false)
+const iconUrl = computed(() => useWebsiteIcon(props.url, props.icon))
+
 const handleClickStar = () => {
 	emits('star-change')
-}
-
-// const dropdownVisible = ref(false)
-// const handleVisibleChange = (isVisible: boolean) => {
-// 	dropdownVisible.value = isVisible
-// }
-
-const vBanClick = {
-	mounted(el: HTMLImageElement) {
-		el.addEventListener('click', e => {
-			if (props.isLoading) e.preventDefault()
-		})
-	}
 }
 </script>
 
@@ -147,10 +89,6 @@ const vBanClick = {
 		@apply relative p-3 h-28 flex flex-col rounded-lg bg-white/60 select-none overflow-hidden;
 		@apply shadow-md transition duration-300;
 
-		// &.is-active {
-		// 	@apply -translate-y-1 shadow-xl;
-		// }
-
 		.bm-website_header {
 			@apply flex;
 
@@ -165,10 +103,6 @@ const vBanClick = {
 				&.is-star {
 					@apply opacity-100;
 				}
-
-				// &.is-active {
-				// 	@apply opacity-100;
-				// }
 			}
 		}
 
@@ -177,22 +111,4 @@ const vBanClick = {
 		}
 	}
 }
-// .bm-website_card {
-//   &:hover .bm-website {
-//     @apply -translate-y-1 shadow-xl;
-//   }
-
-//   .bm-website {
-//     @apply relative p-2 flex gap-2 items-center rounded-lg bg-white/60 select-none;
-//     @apply shadow-md transition duration-300;
-
-//     .bm-website_icon {
-//       @apply flex-none flex items-center;
-//     }
-
-//     .bm-website_info {
-//       @apply flex-1 flex flex-col font-bold overflow-hidden;
-//     }
-//   }
-// }
 </style>

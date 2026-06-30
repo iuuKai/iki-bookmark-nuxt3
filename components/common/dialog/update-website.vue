@@ -1,12 +1,3 @@
-<!--
- * @Author: iuukai
- * @Date: 2023-09-11 09:58:49
- * @LastEditors: iuukai
- * @LastEditTime: 2023-10-01 00:35:56
- * @FilePath: \iki-bookmark-nuxt3\components\common\dialog\update-website.vue
- * @Description: 
- * @QQ/微信: 790331286
--->
 <template>
 	<div class="bm-update-website_wrapper">
 		<el-form ref="formRef" :model="form" :rules="rules">
@@ -16,7 +7,7 @@
 						<el-input
 							v-model="form.url"
 							size="large"
-							placeholder="网站地址，如：https://www.baidu.com"
+							placeholder="网站地址，例如：https://www.baidu.com"
 							clearable
 						>
 							<template #append>
@@ -24,7 +15,7 @@
 									:loading="isGetWebContentLoading"
 									@click="handleGetWebContent(formItemRef, form.url)"
 								>
-									抓取标题
+									抓取信息
 								</el-button>
 							</template>
 						</el-input>
@@ -44,7 +35,6 @@
 							</div>
 							<template #reference>
 								<div :class="['bm-upload-icon', { 'is-active': isPopoverShow }]">
-									<!-- <img v-if="form.icon" class="max-h-full" :src="form.icon" /> -->
 									<BasicImage
 										v-if="form.icon"
 										loadingIconSize="0.8rem"
@@ -61,7 +51,7 @@
 								v-model="form.title"
 								size="large"
 								placeholder="网站名称"
-								:maxlength="MaxLengthTitle"
+								:maxlength="maxLengthTitle"
 								show-word-limit
 								clearable
 							/>
@@ -89,7 +79,7 @@
 				<el-tab-pane label="网址备注" name="2">
 					<el-alert
 						class="!mb-4"
-						title="保存后，鼠标触摸网址即可展示备注"
+						title="保存后将显示在书签卡片描述区域"
 						type="info"
 						show-icon
 						:closable="false"
@@ -98,14 +88,15 @@
 						v-model="form.description"
 						:rows="5"
 						type="textarea"
-						placeholder="在这里你可以给网址一个备注说明"
-						:maxlength="MaxLengthDescription"
+						placeholder="可在这里记录这个网址的用途、登录方式或注意事项"
+						:maxlength="maxLengthDescription"
 						show-word-limit
 						resize="none"
 					/>
 				</el-tab-pane>
 			</el-tabs>
 		</el-form>
+
 		<el-dialog
 			v-model="innerVisible"
 			width="460px"
@@ -118,7 +109,7 @@
 				<el-alert
 					v-show="isInValid"
 					class="!mb-4"
-					title="该图标链接无法识别，请输入正确的图标链接地址！"
+					title="该图标链接无法加载，请输入可访问的图片地址"
 					type="error"
 					show-icon
 					:closable="false"
@@ -127,14 +118,17 @@
 					v-model="remoteIcon"
 					size="large"
 					clearable
-					placeholder="请输入远程图标链接地址"
+					placeholder="请输入远程图标地址"
 				/>
 			</div>
 			<div class="mt-4 flex justify-center">
 				<el-button @click="innerVisible = false">关闭</el-button>
-				<el-button type="primary" @click="hanldeSaveRemoteIcon(remoteIcon)">保存远程图标</el-button>
+				<el-button type="primary" @click="hanldeSaveRemoteIcon(remoteIcon)">
+					保存远程图标
+				</el-button>
 			</div>
 		</el-dialog>
+
 		<div class="mt-4 text-right">
 			<el-button :disabled="isBusyness" @click="emits('cancel')">取消</el-button>
 			<el-button :loading="isBusyness" type="primary" @click="handleConfirm(formRef)">
@@ -151,7 +145,7 @@ import type { FormInstance, FormItemInstance, PopoverInstance } from 'element-pl
 const emits = defineEmits(['update:formData', 'cancel', 'confirm'])
 const props = defineProps({
 	isSubmitLoading: {
-		typee: Boolean,
+		type: Boolean,
 		default: false
 	},
 	formData: {
@@ -164,28 +158,31 @@ const props = defineProps({
 	}
 })
 
-const MaxLengthTitle = 100
-const MaxLengthDescription = 200
+const maxLengthTitle = 100
+const maxLengthDescription = 200
+const defaultCategory = '默认'
 const formRef = ref()
 const formItemRef = ref()
 const form = computed<any>({
 	get: () => props.formData,
 	set: (v: any) => emits('update:formData', v)
 })
+
 const rules = ref({
 	url: [
-		{ required: true, message: '请输入网站链接URL', trigger: 'blur' },
+		{ required: true, message: '请输入网站链接 URL', trigger: 'blur' },
 		{
-			validator: (rule: any, value: any, callback: any) => {
-				if (/^https?:\/\//.test(value)) {
-					try {
-						new URL(value)
-						callback()
-					} catch (error) {
-						callback(new Error('请输入合法的链接'))
-					}
-				} else {
-					callback(new Error('请输入http或https开头的链接'))
+			validator: (rule: any, value: string, callback: any) => {
+				if (!/^https?:\/\//.test(value)) {
+					callback(new Error('链接必须以 http 或 https 开头'))
+					return
+				}
+
+				try {
+					new URL(value)
+					callback()
+				} catch {
+					callback(new Error('请输入合法的链接'))
 				}
 			},
 			trigger: 'change'
@@ -194,7 +191,6 @@ const rules = ref({
 	title: [{ required: true, message: '请输入网站名称', trigger: 'blur' }]
 })
 
-const defaultCategory = '默认'
 const activeName = ref('1')
 const isPopoverShow = ref(false)
 const isGetWebContentLoading = ref(false)
@@ -217,12 +213,15 @@ const popoverRef = ref()
 const remoteIcon = ref('')
 const isInValid = ref(false)
 const innerVisible = ref(false)
-watch(innerVisible, (v: boolean) => (isInValid.value = false))
+
+watch(innerVisible, () => {
+	isInValid.value = false
+})
 
 const validateWebsiteUrl = (formItemEl: FormItemInstance | undefined) => {
 	if (!formItemEl) return
-	return new Promise((resolve, reject) => {
-		formItemEl.validate('change', (valid, fields) => {
+	return new Promise(resolve => {
+		formItemEl.validate('change', valid => {
 			if (!valid) return false
 			resolve(valid)
 		})
@@ -230,16 +229,16 @@ const validateWebsiteUrl = (formItemEl: FormItemInstance | undefined) => {
 }
 
 const handleGetWebContent = async (formItemEl: FormItemInstance | undefined, url: string) => {
-	if (!url) return ElMessage.error('请输入网站地址URL')
+	if (!url) return ElMessage.error('请输入网站地址 URL')
 	try {
 		await validateWebsiteUrl(formItemEl)
 		isGetWebContentLoading.value = true
 		const { statusCode, statusMessage, data = {} }: any = await useApiGetWebContent({ url })
 		if (statusCode) throw new Error(statusMessage)
-		form.value.icon = data.icon.trim()
-		form.value.title = (data.title.slice(0, MaxLengthTitle) || data.url).trim()
-		form.value.description = data.description.slice(0, MaxLengthDescription).trim()
-	} catch (error) {
+		form.value.icon = (data.icon || useWebsiteIcon(data.url, '')).trim()
+		form.value.title = (data.title.slice(0, maxLengthTitle) || data.url).trim()
+		form.value.description = (data.description || '').slice(0, maxLengthDescription).trim()
+	} catch {
 		ElMessage.error('抓取失败')
 	} finally {
 		isGetWebContentLoading.value = false
@@ -248,7 +247,7 @@ const handleGetWebContent = async (formItemEl: FormItemInstance | undefined, url
 
 const handleConfirm = async (formEl: FormInstance | undefined) => {
 	if (!formEl) return
-	await formEl.validate((valid, fields) => {
+	await formEl.validate(valid => {
 		if (!valid) return false
 		emits('confirm')
 	})
@@ -266,34 +265,33 @@ const hanldeSaveRemoteIcon = async (url: string) => {
 		form.value.icon = iconURL
 		isInValid.value = false
 		innerVisible.value = false
-	} catch (error) {
+	} catch {
 		isInValid.value = true
 		ElMessage.error('请输入正确的图片地址')
 	}
 }
 
-let isProxy = false
 const checkImageUrlValid = (url: string) => {
 	return new Promise((resolve, reject) => {
+		let hasTriedProxy = false
 		const img = new Image()
+		img.referrerPolicy = 'no-referrer'
 		img.src = url
-		img.addEventListener('load', () => {
-			isProxy = false
-			resolve(img.src)
-		})
+		img.addEventListener('load', () => resolve(img.src))
 		img.addEventListener('error', () => {
-			if (isProxy) return reject()
-			isProxy = true
-			img.src = '/api/proxy/' + url
+			if (hasTriedProxy) {
+				reject(new Error('invalid image'))
+				return
+			}
+			hasTriedProxy = true
+			img.src = '/api/proxy/' + encodeURIComponent(url)
 		})
 	})
 }
 
-const clearForm = () => {
-	if (formRef.value) {
-		formRef.value.resetFields()
-	}
-	form.value = {}
+const clearForm = (payload: Record<string, any> = {}) => {
+	formRef.value?.resetFields()
+	form.value = { ...payload }
 	remoteIcon.value = ''
 	activeName.value = '1'
 	isGetWebContentLoading.value = false

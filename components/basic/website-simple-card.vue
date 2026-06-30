@@ -1,78 +1,61 @@
-<!--
- * @Author: iuukai
- * @Date: 2023-09-10 23:20:46
- * @LastEditors: iuukai
- * @LastEditTime: 2023-09-29 15:01:58
- * @FilePath: \iki-bookmark-nuxt3\components\basic\website-simple-card.vue
- * @Description: 
- * @QQ/微信: 790331286
--->
 <template>
 	<ClientOnly>
-		<el-tooltip
-			popper-class="max-w-[12rem]"
-			effect="dark"
-			:content="description"
-			placement="top"
-			:visible="tooltipVisible && !!description"
+		<a
+			:class="[
+				'bm-website-simple',
+				{ 'is-active': dropdownVisible, 'is-selected': isMultiple && isSelected }
+			]"
+			:href="url"
+			:title="description || title"
+			target="_blank"
+			v-banlink
+			@click="handleClick"
 		>
-			<a
-				:class="[
-					'bm-website-simple',
-					{ 'is-active': dropdownVisible, 'is-selected': isMultiple && isSelected }
-				]"
-				:href="url"
-				:title="title"
-				target="_blank"
-				v-banlink
-				@click="handleClick"
-				@mouseenter="tooltipVisible = true"
-				@mouseleave="tooltipVisible = false"
-			>
-				<div class="bm-website_content">
-					<el-checkbox v-show="isMultiple" class="!mr-1 !h-full" :model-value="isSelected" />
-					<BasicImage
-						class="mr-2 w-6 h-6"
-						loadingIconSize="0.8rem"
-						:src="icon"
-						fit="contain"
-						lazy
-					/>
-					<el-text class="flex-1" truncated>{{ title }}</el-text>
-					<el-dropdown
-						:class="['bm-website_bar', { 'is-active': dropdownVisible }]"
-						trigger="click"
-						@visible-change="handleVisibleChange"
-						@command="handleCommand"
-					>
-						<div @click.stop.prevent>
-							<Icon name="ic:baseline-more-vert" size="1rem" />
-						</div>
-						<template #dropdown>
-							<el-dropdown-menu>
-								<el-dropdown-item
-									v-for="item in dropdownList"
-									:key="item.text"
-									:class="item.class"
-									:command="item.text"
-									:divided="item.divided"
-									:disabled="isMultiple && !/批量/.test(item.text)"
-								>
-									<el-space>
-										<Icon :name="item.icon" />
-										<span>{{ item.text }}</span>
-									</el-space>
-								</el-dropdown-item>
-							</el-dropdown-menu>
-						</template>
-					</el-dropdown>
-				</div>
-			</a>
-		</el-tooltip>
+			<div class="bm-website_content">
+				<el-checkbox v-show="isMultiple" class="!mr-1 !h-full" :model-value="isSelected" />
+				<BasicImage
+					class="mr-2 w-6 h-6"
+					loadingIconSize="0.8rem"
+					:src="iconUrl"
+					fit="contain"
+					lazy
+				/>
+				<el-text class="flex-1" truncated>{{ title }}</el-text>
+				<el-dropdown
+					:class="['bm-website_bar', { 'is-active': dropdownVisible }]"
+					trigger="click"
+					@visible-change="handleVisibleChange"
+					@command="handleCommand"
+				>
+					<div @click.stop.prevent>
+						<Icon name="ic:baseline-more-vert" size="1rem" />
+					</div>
+					<template #dropdown>
+						<el-dropdown-menu>
+							<el-dropdown-item
+								v-for="item in dropdownList"
+								:key="item.text"
+								:class="item.class"
+								:command="item.text"
+								:divided="item.divided"
+								:disabled="isMultiple && !/批量/.test(item.text)"
+							>
+								<el-space>
+									<Icon :name="item.icon" />
+									<span>{{ item.text }}</span>
+								</el-space>
+							</el-dropdown-item>
+						</el-dropdown-menu>
+					</template>
+				</el-dropdown>
+			</div>
+		</a>
 	</ClientOnly>
 </template>
 
 <script setup lang="ts">
+import { Connection } from '@element-plus/icons-vue'
+
 const emits = defineEmits(['select-change', 'command'])
 const props = defineProps({
 	isMultiple: {
@@ -104,12 +87,14 @@ const props = defineProps({
 const dropdownList = [
 	{ icon: 'humbleicons:link', text: '复制链接', class: '', divided: false },
 	{ icon: 'ph:note-pencil', text: '编辑', class: '', divided: true },
+	{ icon: 'ep:connection', text: '移动分类', class: '', divided: false },
 	{ icon: 'clarity:success-line', text: '批量处理', class: '', divided: false },
 	{ icon: 'material-symbols:delete-outline', text: '删除', class: 'danger', divided: true }
 ]
 
-const tooltipVisible = ref(false)
 const dropdownVisible = ref(false)
+const iconUrl = computed(() => useWebsiteIcon(props.url, props.icon))
+
 const handleVisibleChange = (isVisible: boolean) => {
 	dropdownVisible.value = isVisible
 }

@@ -1,17 +1,15 @@
-<!--
- * @Author: iuukai
- * @Date: 2023-08-22 23:27:28
- * @LastEditors: iuukai
- * @LastEditTime: 2023-09-30 23:20:53
- * @FilePath: \iki-bookmark-nuxt3\components\basic\image.vue
- * @Description: 
- * @QQ/微信: 790331286
--->
 <template>
 	<div class="bm-image" v-lazy="lazy">
-		<BasicLoading v-if="!state" :size="loadingIconSize" :circle="circle" />
+		<div v-if="!state" :class="['bm-image_placeholder', { 'is-circle': circle }]" />
 		<template v-else>
-			<img v-if="state > 0" :class="['w-full', 'h-full', fit ? `object-${fit}` : '']" :src="url" />
+			<img
+				v-if="state > 0"
+				:class="['w-full', 'h-full', fit ? `object-${fit}` : '']"
+				:src="url"
+				:loading="lazy ? 'lazy' : 'eager'"
+				decoding="async"
+				referrerpolicy="no-referrer"
+			/>
 			<Icon v-else :name="errorIcon" :size="errorIconSize" />
 		</template>
 	</div>
@@ -19,7 +17,7 @@
 
 <script setup lang="ts">
 import type { DirectiveBinding } from 'vue'
-import Worker from '@/assets/workers/index.ts?worker'
+import { useImageLoadQueue } from '@/composables/useImageLoadQueue'
 
 type Fit = '' | 'fill' | 'contain' | 'cover' | 'none' | 'scale-down'
 
@@ -63,71 +61,95 @@ const propsSrc = computed(() => props.src.replace(/^\/\//, 'https://'))
 
 const url = ref('')
 const state = ref(0)
+const shouldLoad = ref(false)
+const queue = useImageLoadQueue()
 
-watch(propsSrc, () => loadImage())
+let img: HTMLImageElement | null = null
+let hasTriedProxy = false
+let cancelQueueTask: (() => void) | null = null
+let releaseQueueTask: (() => void) | null = null
 
-let img: HTMLImageElement | null
-let isProxy = false
+watch(
+	propsSrc,
+	() => {
+		cleanup()
+		url.value = ''
+		state.value = 0
+		hasTriedProxy = false
+		if (shouldLoad.value) loadImage()
+	},
+	{ immediate: true }
+)
 
 const handleImageResult = (e: Event) => {
 	const el = e.target as HTMLImageElement
 	if (e.type === 'load') {
 		url.value = el.src
 		state.value = 1
-	} else if (e.type === 'error') {
-		if (isProxy) {
-			// 加载失败
-			state.value = -1
-		} else {
-			// 使用代理，再次加载
-			isProxy = true
-			el.src = '/api/proxy/' + url
-		}
+		releaseQueueTask?.()
+		releaseQueueTask = null
+		return
 	}
+
+	if (hasTriedProxy) {
+		state.value = -1
+		releaseQueueTask?.()
+		releaseQueueTask = null
+		return
+	}
+
+	hasTriedProxy = true
+	el.src = '/api/proxy/' + encodeURIComponent(propsSrc.value)
 }
 
 const loadImage = () => {
-	if (url.value) return
-	if (!propsSrc.value) return (state.value = -1)
+	if (state.value !== 0 || url.value) return
+	if (!propsSrc.value) {
+		state.value = -1
+		return
+	}
 
-	const worker = new Worker()
-	worker.postMessage({
-		id: 'img',
-		url: propsSrc.value
-	})
-	worker.addEventListener('message', (e: MessageEvent) => {
-		const { code, msg, url: src } = e.data
-		if (/webpack/i.test(src)) console.log(e.data)
-		if (code === 200) {
-			// 加载成果
-			url.value = src
-			state.value = 1
-		} else {
-			// 原地址二次加载
-			img = new Image()
-			img.src = propsSrc.value
-			img.addEventListener('load', handleImageResult, false)
-			img.addEventListener('error', handleImageResult, false)
-		}
+	if (cancelQueueTask || releaseQueueTask) return
+	cancelQueueTask = queue.enqueue((done: () => void) => {
+		cancelQueueTask = null
+		releaseQueueTask = done
+		img = new Image()
+		img.decoding = 'async'
+		img.referrerPolicy = 'no-referrer'
+		img.src = propsSrc.value
+		img.addEventListener('load', handleImageResult, false)
+		img.addEventListener('error', handleImageResult, false)
 	})
 }
 
-// 指令
+function cleanup() {
+	cancelQueueTask?.()
+	cancelQueueTask = null
+	if (!img) return
+	img.removeEventListener('load', handleImageResult, false)
+	img.removeEventListener('error', handleImageResult, false)
+	img.src = ''
+	img = null
+	releaseQueueTask?.()
+	releaseQueueTask = null
+}
+
 const vLazy = {
 	mounted(el: HTMLImageElement, binding: DirectiveBinding) {
-		if (!binding.value) loadImage()
+		if (!binding.value) {
+			shouldLoad.value = true
+			loadImage()
+		}
 		useIntersectionObserver(el, ([{ isIntersecting }]: { isIntersecting: boolean }[]) => {
-			// 懒加载
-			if (isIntersecting && binding.value) loadImage()
+			if (isIntersecting && binding.value) {
+				shouldLoad.value = true
+				loadImage()
+			}
 			emits('image-visibility-change', isIntersecting)
 		})
 	},
 	beforeUnmount() {
-		if (img) {
-			img.removeEventListener('load', handleImageResult, false)
-			img.removeEventListener('error', handleImageResult, false)
-			img = null
-		}
+		cleanup()
 	}
 }
 </script>
@@ -135,5 +157,13 @@ const vLazy = {
 <style scoped lang="less">
 .bm-image {
 	@apply flex justify-center items-center;
+
+	&_placeholder {
+		@apply w-full h-full bg-gray-300/60 rounded;
+
+		&.is-circle {
+			@apply rounded-full;
+		}
+	}
 }
 </style>
